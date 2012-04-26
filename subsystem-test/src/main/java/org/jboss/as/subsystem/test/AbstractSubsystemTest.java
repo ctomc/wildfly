@@ -45,6 +45,7 @@ import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.smartcardio.ATR;
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLInputFactory;
@@ -611,6 +612,23 @@ public abstract class AbstractSubsystemTest {
                 } else if (regAttributeNames.size() < attributeNames.size()) {
                     attributeNames.removeAll(regAttributeNames);
                     Assert.fail("More attributes defined in description than on resource registration, missing: " + attributeNames + " for " + address);
+                }
+            }
+            if (!attributeNames.containsAll(regAttributeNames)) {
+                for (Property p : attributes.asPropertyList()) {
+                    attributeNames.add(p.getName());
+                }
+                Set<String> missDesc = new HashSet<String>(attributeNames);
+                missDesc.removeAll(regAttributeNames);
+
+                Set<String> missReg = new HashSet<String>(regAttributeNames);
+                missReg.removeAll(attributeNames);
+
+                if (!missReg.isEmpty()) {
+                    Assert.fail("There are different attributes defined on resource registration than in description, registered only on Resource Reg: " + missReg + " for " + address);
+                }
+                if (!missDesc.isEmpty()) {
+                    Assert.fail("There are different attributes defined on resource registration than in description, registered only int description: " + missDesc + " for " + address);
                 }
             }
         }
