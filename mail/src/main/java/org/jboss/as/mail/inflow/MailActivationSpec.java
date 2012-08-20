@@ -22,11 +22,11 @@
 
 package org.jboss.as.mail.inflow;
 
+import java.io.Serializable;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
-import java.io.Serializable;
 
 /**
  * The encapsulation of the mail folder endpoint specification
@@ -78,12 +78,12 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
     /**
      * The new messages check delay in MS
      */
-    private Long pollingInterval = Long.valueOf(60000L);
+    private long pollingInterval = 60000L;
 
     /**
      * The maximum number of messages
      */
-    private Integer maxMessages = Integer.valueOf(1);
+    private int maxMessages = 1;
 
     /**
      * Enable JavaMail debugging
@@ -93,17 +93,17 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
     /**
      * Flush - for pop3 flush the mailbox after checking
      */
-    private Boolean flush = Boolean.TRUE;
+    private boolean flush = Boolean.TRUE;
 
     /**
      * Starttls - ssl
      */
-    private Boolean starttls;
+    private boolean starttls;
 
     /**
      * The port
      */
-    private Integer port;
+    private int port;
 
     /**
      * Constructor
@@ -242,7 +242,7 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
      *
      * @return The value
      */
-    public Integer getMaxMessages() {
+    public int getMaxMessages() {
         return maxMessages;
     }
 
@@ -251,7 +251,7 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
      *
      * @param maxMessages The value
      */
-    public void setMaxMessages(Integer maxMessages) {
+    public void setMaxMessages(int maxMessages) {
         this.maxMessages = maxMessages;
     }
 
@@ -260,7 +260,7 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
      *
      * @return The value
      */
-    public Boolean isDebug() {
+    public boolean isDebug() {
         return debug;
     }
 
@@ -269,7 +269,7 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
      *
      * @param debug The value
      */
-    public void setDebug(Boolean debug) {
+    public void setDebug(boolean debug) {
         this.debug = debug;
     }
 
@@ -278,7 +278,7 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
      *
      * @return The value
      */
-    public Integer getPort() {
+    public int getPort() {
         return port;
     }
 
@@ -287,7 +287,7 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
      *
      * @param port The value
      */
-    public void setPort(Integer port) {
+    public void setPort(int port) {
         this.port = port;
     }
 
@@ -296,7 +296,7 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
      *
      * @return The value
      */
-    public Boolean isStarttls() {
+    public boolean isStarttls() {
         return starttls;
     }
 
@@ -305,7 +305,7 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
      *
      * @param starttls The value
      */
-    public void setStarttls(Boolean starttls) {
+    public void setStarttls(boolean starttls) {
         this.starttls = starttls;
     }
 
@@ -314,7 +314,7 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
      *
      * @return The value
      */
-    public Boolean isFlush() {
+    public boolean isFlush() {
         return flush;
     }
 
@@ -323,7 +323,7 @@ public class MailActivationSpec implements ActivationSpec, Serializable {
      *
      * @param flush The value
      */
-    public void setFlush(Boolean flush) {
+    public void setFlush(boolean flush) {
         this.flush = flush;
     }
 

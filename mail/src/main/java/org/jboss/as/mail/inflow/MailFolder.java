@@ -22,14 +22,14 @@
 
 package org.jboss.as.mail.inflow;
 
+import java.util.Iterator;
+import java.util.Properties;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.NoSuchProviderException;
 import javax.mail.Session;
 import javax.mail.Store;
-import java.util.Iterator;
-import java.util.Properties;
 
 /**
  * An encapsulation of a mail store folder used by the MailActivation.run to
@@ -47,8 +47,8 @@ public abstract class MailFolder implements Iterator {
     private String userName;
     private String password;
     private Integer port;
-    private Boolean debug;
-    private Boolean starttls;
+    private boolean debug = false;
+    private boolean starttls = false;
     private Properties sessionProps;
 
     private Message[] msgs = {};

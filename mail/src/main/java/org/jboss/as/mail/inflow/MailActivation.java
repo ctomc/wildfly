@@ -22,13 +22,13 @@
 
 package org.jboss.as.mail.inflow;
 
-import org.jboss.logging.Logger;
-
+import java.lang.reflect.Method;
 import javax.mail.Message;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
-import java.lang.reflect.Method;
+
+import org.jboss.logging.Logger;
 
 /**
  * The MailActivation encapsulates a MailResourceAdapter#endpointActivation
@@ -69,8 +69,7 @@ public class MailActivation implements Comparable, Work {
 
     static {
         try {
-            Class[] sig = {Message.class};
-            ON_MESSAGE = MailListener.class.getMethod("onMessage", sig);
+            ON_MESSAGE = MailListener.class.getMethod("onMessage", Message.class);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
