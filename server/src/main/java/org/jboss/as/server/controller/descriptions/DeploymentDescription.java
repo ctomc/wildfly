@@ -24,7 +24,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ATT
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.BYTES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CHILDREN;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DESCRIPTION;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.FULL_REPLACE_DEPLOYMENT;
@@ -40,7 +39,6 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NIL
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATIONS;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RELATIVE_TO;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLY_PROPERTIES;
@@ -165,15 +163,6 @@ public class DeploymentDescription {
         return root;
     }
 
-    public static final ModelNode getDeployDeploymentOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(DEPLOY);
-        root.get(DESCRIPTION).set(bundle.getString("deployment.deploy"));
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
     public static final ModelNode getReplaceDeploymentOperation(Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
@@ -223,16 +212,6 @@ public class DeploymentDescription {
         final ModelNode root = new ModelNode();
         root.get(OPERATION_NAME).set(UNDEPLOY);
         root.get(DESCRIPTION).set(bundle.getString("deployment.undeploy"));
-        root.get(REQUEST_PROPERTIES).setEmptyObject();
-        root.get(REPLY_PROPERTIES).setEmptyObject();
-        return root;
-    }
-
-    public static final ModelNode getRedeployDeploymentOperation(Locale locale) {
-        final ResourceBundle bundle = getResourceBundle(locale);
-        final ModelNode root = new ModelNode();
-        root.get(OPERATION_NAME).set(REDEPLOY);
-        root.get(DESCRIPTION).set(bundle.getString("deployment.redeploy"));
         root.get(REQUEST_PROPERTIES).setEmptyObject();
         root.get(REPLY_PROPERTIES).setEmptyObject();
         return root;
@@ -288,9 +267,7 @@ public class DeploymentDescription {
 
     public static void main(String[] args) {
         System.out.println(getAddDeploymentOperation(null, true));
-        System.out.println(getDeployDeploymentOperation(null));
         System.out.println(getFullReplaceDeploymentOperation(null));
-        System.out.println(getRedeployDeploymentOperation(null));
         System.out.println(getReplaceDeploymentOperation(null));
         System.out.println(getUndeployDeploymentOperation(null));
         System.out.println(getUploadDeploymentBytesOperation(null));

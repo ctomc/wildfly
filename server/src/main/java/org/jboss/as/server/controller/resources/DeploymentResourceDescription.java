@@ -29,7 +29,6 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReadResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
-import org.jboss.as.server.controller.descriptions.ServerDescriptions;
 import org.jboss.as.server.deployment.DeploymentStatusHandler;
 
 /**
@@ -40,9 +39,9 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
 
     private DeploymentResourceParent parent;
 
-    public DeploymentResourceDescription(DeploymentResourceParent parent, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
+    protected DeploymentResourceDescription(DeploymentResourceParent parent, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(PathElement.pathElement(DEPLOYMENT),
-                ServerDescriptions.getResourceDescriptionResolver(DEPLOYMENT, false),
+                DeploymentAttributes.DEPLOYMENT_RESOLVER,
                 addHandler,
                 removeHandler);
         this.parent = parent;
