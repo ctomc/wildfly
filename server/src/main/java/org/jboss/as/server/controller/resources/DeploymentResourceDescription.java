@@ -40,7 +40,6 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
 
     private DeploymentResourceParent parent;
 
-
     public DeploymentResourceDescription(DeploymentResourceParent parent, OperationStepHandler addHandler, OperationStepHandler removeHandler) {
         super(PathElement.pathElement(DEPLOYMENT),
                 ServerDescriptions.getResourceDescriptionResolver(DEPLOYMENT, false),
@@ -51,10 +50,12 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadOnlyAttribute(DeploymentAttributes.NAME, ReadResourceNameOperationStepHandler.INSTANCE);
-        for (AttributeDefinition attr : parent.getAttributes()) {
+
+        for (AttributeDefinition attr : parent.getResourceAttributes()) {
             if (attr.getName().equals(DeploymentAttributes.STATUS.getName())) {
                 resourceRegistration.registerMetric(attr, DeploymentStatusHandler.INSTANCE);
+            } else if (attr.getName().equals(DeploymentAttributes.NAME.getName())) {
+                resourceRegistration.registerReadOnlyAttribute(DeploymentAttributes.NAME, ReadResourceNameOperationStepHandler.INSTANCE);
             } else {
                 resourceRegistration.registerReadOnlyAttribute(attr, null);
             }
@@ -66,17 +67,23 @@ public abstract class DeploymentResourceDescription extends SimpleResourceDefini
     }
 
     public static enum DeploymentResourceParent {
-        DOMAIN (DeploymentAttributes.DOMAIN_ADD_ATTRIBUTES),
-        SERVER_GROUP (DeploymentAttributes.SERVER_ADD_GROUP_ATTRIBUTES),
-        SERVER (DeploymentAttributes.SERVER_ADD_ATTRIBUTES);
+        DOMAIN (DeploymentAttributes.DOMAIN_RESOURCE_ATTRIBUTES, DeploymentAttributes.DOMAIN_ADD_ATTRIBUTES),
+        SERVER_GROUP (DeploymentAttributes.SERVER_GROUP_RESOURCE_ATTRIBUTES, DeploymentAttributes.SERVER_GROUP_ADD_ATTRIBUTES),
+        SERVER (DeploymentAttributes.SERVER_RESOURCE_ATTRIBUTES, DeploymentAttributes.SERVER_ADD_ATTRIBUTES);
 
-        final AttributeDefinition[] defs;
-        private DeploymentResourceParent(AttributeDefinition[] defs) {
-            this.defs = defs;
+        final AttributeDefinition[] resourceAttributes;
+        final AttributeDefinition[] addAttributes;
+        private DeploymentResourceParent(AttributeDefinition[] resourceAttributes, AttributeDefinition[] addAttributes) {
+            this.resourceAttributes = resourceAttributes;
+            this.addAttributes = addAttributes;
         }
 
-        AttributeDefinition[] getAttributes() {
-            return defs;
+        AttributeDefinition[] getResourceAttributes() {
+            return resourceAttributes;
+        }
+
+        AttributeDefinition[] getAddAttributes() {
+            return addAttributes;
         }
     }
 }

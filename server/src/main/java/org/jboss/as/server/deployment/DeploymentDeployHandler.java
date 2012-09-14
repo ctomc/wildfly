@@ -20,7 +20,7 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ALL;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
@@ -68,7 +68,7 @@ public class DeploymentDeployHandler implements OperationStepHandler, Descriptio
         PathAddress address = PathAddress.pathAddress(opAddr);
         final String name = address.getLastElement().getValue();
         final String runtimeName = RUNTIME_NAME.resolveModelAttribute(context, model).asString();
-        final DeploymentHandlerUtil.ContentItem[] contents = getContents(CONTENT.resolveModelAttribute(context, model));
+        final DeploymentHandlerUtil.ContentItem[] contents = getContents(CONTENT_ALL.resolveModelAttribute(context, model));
         DeploymentHandlerUtil.deploy(context, runtimeName, name, vaultReader, contents);
 
         context.completeStep();

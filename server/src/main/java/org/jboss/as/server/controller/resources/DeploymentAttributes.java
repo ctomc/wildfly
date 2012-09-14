@@ -87,7 +87,7 @@ public class DeploymentAttributes {
             createContentValueTypeAttribute(ModelDescriptionConstants.ARCHIVE, ModelType.STRING, new StringLengthValidator(1, true), false);
 
     /** The content complex attribute */
-    public static final ObjectListAttributeDefinition CONTENT =
+    public static final ObjectListAttributeDefinition CONTENT_ALL =
                 ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
                     ObjectTypeAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
                             CONTENT_INPUT_STREAM_INDEX,
@@ -102,15 +102,36 @@ public class DeploymentAttributes {
                     .setMinSize(1)
                     .setMaxSize(1)
                     .build();
+    public static final ObjectListAttributeDefinition CONTENT_RESOURCE =
+                ObjectListAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
+                    ObjectTypeAttributeDefinition.Builder.of(ModelDescriptionConstants.CONTENT,
+                            CONTENT_HASH,
+                            CONTENT_PATH,
+                            CONTENT_RELATIVE_TO,
+                            CONTENT_ARCHIVE)
+                            .setValidator(new ContentTypeValidator())
+                            .build())
+                    .setMinSize(1)
+                    .setMaxSize(1)
+                    .build();
+
+    /** Attributes for server deployment resource */
+    public static final AttributeDefinition[] SERVER_RESOURCE_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, CONTENT_ALL, ENABLED, PERSISTENT, STATUS};
 
     /** Attributes for server deployment add */
-    public static final AttributeDefinition[] SERVER_ADD_ATTRIBUTES = new AttributeDefinition[] { RUNTIME_NAME, CONTENT, ENABLED, PERSISTENT, STATUS};
+    public static final AttributeDefinition[] SERVER_ADD_ATTRIBUTES = new AttributeDefinition[] { RUNTIME_NAME, CONTENT_ALL, ENABLED, PERSISTENT, STATUS};
 
     /** Attributes for server group deployment add */
-    public static final AttributeDefinition[] SERVER_ADD_GROUP_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, ENABLED};
+    public static final AttributeDefinition[] SERVER_GROUP_RESOURCE_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, ENABLED};
+
+    /** Attributes for server group deployment add */
+    public static final AttributeDefinition[] SERVER_GROUP_ADD_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, ENABLED};
+
+    /** Attributes for domain deployment resource */
+    public static final AttributeDefinition[] DOMAIN_RESOURCE_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, CONTENT_ALL};
 
     /** Attributes for domain deployment add */
-    public static final AttributeDefinition[] DOMAIN_ADD_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, CONTENT};
+    public static final AttributeDefinition[] DOMAIN_ADD_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, CONTENT_ALL};
 
     /** Attributes indicating managed deployments in the content attribute */
     public static final Map<String, AttributeDefinition> MANAGED_CONTENT_ATTRIBUTES;

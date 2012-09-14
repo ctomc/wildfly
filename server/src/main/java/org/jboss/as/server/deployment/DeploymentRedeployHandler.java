@@ -20,7 +20,7 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REDEPLOY;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT;
+import static org.jboss.as.server.controller.resources.DeploymentAttributes.CONTENT_ALL;
 import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtil.redeploy;
 import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
@@ -65,7 +65,7 @@ public class DeploymentRedeployHandler implements OperationStepHandler, Descript
         final ModelNode model = context.readModel(PathAddress.EMPTY_ADDRESS);
         final String name = PathAddress.pathAddress(operation.require(OP_ADDR)).getLastElement().getValue();
         final String runtimeName = RUNTIME_NAME.resolveModelAttribute(context, model).asString();
-        final DeploymentHandlerUtil.ContentItem[] contents = getContents(CONTENT.resolveModelAttribute(context, model));
+        final DeploymentHandlerUtil.ContentItem[] contents = getContents(CONTENT_ALL.resolveModelAttribute(context, model));
         redeploy(context, runtimeName, name, vaultReader, contents);
     }
 }
