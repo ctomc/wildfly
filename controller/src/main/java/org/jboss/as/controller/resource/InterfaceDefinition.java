@@ -1,5 +1,6 @@
 package org.jboss.as.controller.resource;
 
+import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.INTERFACE;
 
 import java.util.Arrays;
@@ -7,28 +8,31 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.ObjectTypeAttributeDefinition;
+import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ResourceNameOperationStepHandler;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonDescriptions;
-import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.as.controller.operations.common.InterfaceAddHandler;
 import org.jboss.as.controller.operations.common.InterfaceCriteriaWriteHandler;
 import org.jboss.as.controller.operations.common.InterfaceRemoveHandler;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
+import org.jboss.as.controller.operations.validation.ParameterValidator;
 import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2012 Red Hat Inc.
  */
 public class InterfaceDefinition extends SimpleResourceDefinition {
-  /*  public static final InterfaceDefinition INSTANCE_RUNTIME = new InterfaceDefinition(true);
-    public static final InterfaceDefinition INSTANCE_CONFIG = new InterfaceDefinition(false);
-*/
+    /*  public static final InterfaceDefinition INSTANCE_RUNTIME = new InterfaceDefinition(true);
+        public static final InterfaceDefinition INSTANCE_CONFIG = new InterfaceDefinition(false);
+    */
 
     public static final String[] ALTERNATIVES_ANY = new String[]{ModelDescriptionConstants.ANY_ADDRESS, ModelDescriptionConstants.ANY_IPV4_ADDRESS, ModelDescriptionConstants.ANY_IPV6_ADDRESS};
     public static final String[] OTHERS = new String[]{localName(Element.INET_ADDRESS), localName(Element.LINK_LOCAL_ADDRESS),
@@ -104,8 +108,24 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
     public static final AttributeDefinition VIRTUAL = SimpleAttributeDefinitionBuilder.create(localName(Element.VIRTUAL), ModelType.BOOLEAN)
             .setAllowExpression(false).setAllowNull(true).addAlternatives(ALTERNATIVES_ANY).setRestartAllServices()
             .build();
-    public static final AttributeDefinition NOT = InterfaceDescription.createNestedComplexType("not");
-    public static final AttributeDefinition ANY = InterfaceDescription.createNestedComplexType("any");
+
+    public static final AttributeDefinition[] NESTED_ATTRIBUTES = new AttributeDefinition[]{
+            INET_ADDRESS, LINK_LOCAL_ADDRESS, LOOPBACK, LOOPBACK_ADDRESS, MULTICAST, NIC,
+            NIC_MATCH, POINT_TO_POINT, PUBLIC_ADDRESS, SITE_LOCAL_ADDRESS, SUBNET_MATCH, UP, VIRTUAL
+    };
+
+    /*public static final AttributeDefinition NOT = InterfaceDescription.createNestedComplexType("not");
+public static final AttributeDefinition ANY = InterfaceDescription.createNestedComplexType("any");*/
+
+    public static final ObjectTypeAttributeDefinition NOT = new ObjectTypeAttributeDefinition.Builder("not", NESTED_ATTRIBUTES)
+            .setAllowNull(true)
+            .build();
+
+    public static final ObjectTypeAttributeDefinition ANY = new ObjectTypeAttributeDefinition.Builder("any", NESTED_ATTRIBUTES)
+            .setAllowNull(true)
+            .build();
+
+
     /**
      * The root attributes.
      */
@@ -119,10 +139,7 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
     /**
      * The nested attributes for any, not.
      */
-    public static final AttributeDefinition[] NESTED_ATTRIBUTES = new AttributeDefinition[]{
-            INET_ADDRESS, LINK_LOCAL_ADDRESS, LOOPBACK, LOOPBACK_ADDRESS, MULTICAST, NIC,
-            NIC_MATCH, POINT_TO_POINT, PUBLIC_ADDRESS, SITE_LOCAL_ADDRESS, SUBNET_MATCH, UP, VIRTUAL
-    };
+
     public static final Set<AttributeDefinition> NESTED_LIST_ATTRIBUTES = new HashSet<AttributeDefinition>(
             Arrays.asList(INET_ADDRESS, NIC, NIC_MATCH, SUBNET_MATCH)
     );
@@ -145,6 +162,21 @@ public class InterfaceDefinition extends SimpleResourceDefinition {
 
     public static String localName(final Element element) {
         return element.getLocalName();
+    }
+
+    /**
+     * Test whether the operation has a defined criteria attribute.
+     *
+     * @param operation the operation
+     * @return
+     */
+    public static boolean isOperationDefined(final ModelNode operation) {
+        for(final AttributeDefinition def : ROOT_ATTRIBUTES) {
+            if(operation.hasDefined(def.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

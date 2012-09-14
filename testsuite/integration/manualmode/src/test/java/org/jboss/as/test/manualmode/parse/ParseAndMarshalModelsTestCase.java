@@ -77,6 +77,7 @@ import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
 import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
@@ -767,7 +768,7 @@ public class ParseAndMarshalModelsTestCase {
                 hostRegistration.registerSubModel(new VaultResourceDefinition(new MockVaultReader()));
 
                 // Central Management
-                ManagementResourceRegistration management = hostRegistration.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
+                ManagementResourceRegistration management = hostRegistration.registerSubModel(CoreManagementDefinition.INSTANCE);
                 management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
                 management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
                 management.registerSubModel(new NativeManagementResourceDefinition(hostControllerInfo));

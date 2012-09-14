@@ -33,6 +33,7 @@ import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
 import org.jboss.as.controller.RunningModeControl;
 import org.jboss.as.controller.descriptions.common.CommonProviders;
+import org.jboss.as.controller.descriptions.common.CoreManagementDefinition;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.extension.ExtensionResourceDefinition;
 import org.jboss.as.controller.operations.common.SocketBindingGroupRemoveHandler;
@@ -98,7 +99,8 @@ public class ServerControllerModelUtil {
 
         // Central Management
         // Start with the base /core-service=management MNR. The Resource for this is added by ServerService itself, so there is no add/remove op handlers
-        ManagementResourceRegistration management = root.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
+        //ManagementResourceRegistration management = root.registerSubModel(PathElement.pathElement(CORE_SERVICE, MANAGEMENT), CommonProviders.MANAGEMENT_WITH_INTERFACES_PROVIDER);
+        ManagementResourceRegistration management = root.registerSubModel(CoreManagementDefinition.INSTANCE);
 
         management.registerSubModel(SecurityRealmResourceDefinition.INSTANCE);
         management.registerSubModel(LdapConnectionResourceDefinition.INSTANCE);
