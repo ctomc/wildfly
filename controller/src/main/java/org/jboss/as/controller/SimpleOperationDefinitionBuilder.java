@@ -52,6 +52,7 @@ public class SimpleOperationDefinitionBuilder {
         this.resolver = resolver;
     }
 
+
     public SimpleOperationDefinition build() {
         return new SimpleOperationDefinition(name, resolver, entryType, flags, replyType, replyValueType, deprecationData, replyParameters, parameters);
     }
