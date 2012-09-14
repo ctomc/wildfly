@@ -51,9 +51,9 @@ public final class CommonProviders {
     };
 
 
-    /**
+   /* *//**
      * Provider for a sub-model that names an interface but doesn't require the address selection criteria.
-     */
+     *//*
     public static final DescriptionProvider NAMED_INTERFACE_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
@@ -61,9 +61,9 @@ public final class CommonProviders {
         }
     };
 
-    /**
+    *//**
      * Provider for a sub-model that names an interface and specifies the criteria.
-     */
+     *//*
     public static final DescriptionProvider SPECIFIED_INTERFACE_PROVIDER = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(final Locale locale) {
@@ -76,7 +76,7 @@ public final class CommonProviders {
         public ModelNode getModelDescription(final Locale locale) {
             return InterfaceDescription.getSpecifiedInterfaceDescription(locale, true);
         }
-    };
+    };*/
 
     public static final DescriptionProvider READ_RESOURCE_PROVIDER = new DescriptionProvider() {
         @Override

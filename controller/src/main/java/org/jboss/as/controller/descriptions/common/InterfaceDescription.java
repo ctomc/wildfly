@@ -50,7 +50,6 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParameterValidator;
-import org.jboss.as.controller.parsing.Element;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.AttributeAccess.Storage;
 import org.jboss.as.controller.resource.InterfaceDefinition;
@@ -74,7 +73,7 @@ public class InterfaceDescription {
         final ModelNode root = new ModelNode();
         root.get(DESCRIPTION).set(bundle.getString("named_interface"));
         InterfaceDefinition.NAME.addResourceAttributeDescription(bundle, "interface", root);
-        populateInterface(root, bundle, false);
+        populateInterface(root, bundle);
         return root;
     }
 
@@ -93,11 +92,11 @@ public class InterfaceDescription {
             root.get(ATTRIBUTES, "resolved-address", TYPE).set(ModelType.STRING);
         }
 
-        populateInterface(root, bundle, true);
+        populateInterface(root, bundle);
         return root;
     }
-
-    private static void populateInterface(ModelNode root, ResourceBundle bundle, boolean specified) {
+    @Deprecated
+    private static void populateInterface(ModelNode root, ResourceBundle bundle) {
         root.get(HEAD_COMMENT_ALLOWED).set(true);
         root.get(TAIL_COMMENT_ALLOWED).set(false);
         // Add the interface criteria operation params
@@ -105,7 +104,7 @@ public class InterfaceDescription {
             def.addResourceAttributeDescription(bundle, "interface", root);
         }
     }
-
+    @Deprecated
     public static ModelNode getNamedInterfaceAddOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
@@ -118,6 +117,7 @@ public class InterfaceDescription {
         return root;
     }
 
+    @Deprecated
     public static ModelNode getSpecifiedInterfaceAddOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
@@ -129,7 +129,7 @@ public class InterfaceDescription {
         }
         return root;
     }
-
+    @Deprecated
     public static ModelNode getInterfaceRemoveOperation(final Locale locale) {
         final ResourceBundle bundle = getResourceBundle(locale);
         final ModelNode root = new ModelNode();
