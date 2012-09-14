@@ -25,6 +25,7 @@ package org.jboss.as.server.controller.descriptions;
 import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -34,12 +35,28 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry
  *
  */
-@Deprecated
 public final class ServerDescriptionProviders {
 
     // Prevent instantiation
     private ServerDescriptionProviders() {}
 
+    /**
+     * Provider for the host model root.
+     */
+    public static final DescriptionProvider ROOT_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return ServerRootDescription.getDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider DEPLOYMENT_PROVIDER = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return DeploymentDescription.getDeploymentDescription(locale, true, true, true);
+        }
+    };
 
     public static final DescriptionProvider SUBDEPLOYMENT_PROVIDER = new DescriptionProvider() {
 
@@ -49,4 +66,10 @@ public final class ServerDescriptionProviders {
         }
     };
 
+    public static final DescriptionProvider SYSTEM_PROPERTIES_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return ServerDescriptions.getSystemPropertyDescription(locale);
+        }
+    };
 }

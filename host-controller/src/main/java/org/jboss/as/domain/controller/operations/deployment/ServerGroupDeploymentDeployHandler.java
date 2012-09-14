@@ -18,12 +18,14 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
-
+import java.util.Locale;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.dmr.ModelNode;
 
@@ -32,7 +34,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentDeployHandler implements OperationStepHandler {
+public class ServerGroupDeploymentDeployHandler implements OperationStepHandler, DescriptionProvider {
 
     public static final String OPERATION_NAME = DEPLOY;
 
@@ -45,8 +47,13 @@ public class ServerGroupDeploymentDeployHandler implements OperationStepHandler 
     private ServerGroupDeploymentDeployHandler() {
     }
 
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return DeploymentDescription.getDeployDeploymentOperation(locale);
+    }
+
     public void execute(OperationContext context, ModelNode operation) {
-        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED.getName()).set(true);
+        context.readModelForUpdate(PathAddress.EMPTY_ADDRESS).get(ENABLED).set(true);
         context.completeStep();
     }
 }

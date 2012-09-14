@@ -36,15 +36,17 @@ import org.jboss.logmanager.handlers.PeriodicRotatingFileHandler;
  */
 class PeriodicHandlerResourceDefinition extends AbstractFileHandlerDefinition {
 
-    static final AttributeDefinition[] ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, APPEND, FILE, SUFFIX);
+    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, APPEND, FILE, SUFFIX);
+    // Add attributes are a combination of writable and read-only attributes
+    static final AttributeDefinition[] ADD_ATTRIBUTES = appendDefaultReadOnlyAttributes(WRITABLE_ATTRIBUTES);
 
     static final PeriodicHandlerResourceDefinition INSTANCE = new PeriodicHandlerResourceDefinition();
 
     private PeriodicHandlerResourceDefinition() {
         super(LoggingExtension.PERIODIC_HANDLER_PATH,
                 PERIODIC_ROTATING_FILE_HANDLER,
-                new HandlerOperations.HandlerAddOperationStepHandler(PeriodicRotatingFileHandler.class, ATTRIBUTES, FILE, APPEND),
-                ATTRIBUTES);
+                new HandlerOperations.HandlerAddOperationStepHandler(PeriodicRotatingFileHandler.class, ADD_ATTRIBUTES, FILE, APPEND),
+                WRITABLE_ATTRIBUTES);
     }
 
 }

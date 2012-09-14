@@ -24,6 +24,7 @@ package org.jboss.as.domain.controller.descriptions;
 import java.util.Locale;
 
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.descriptions.common.ProfileDescription;
 import org.jboss.dmr.ModelNode;
 
@@ -34,7 +35,6 @@ import org.jboss.dmr.ModelNode;
  * @author Brian Stansberry
  * @author Emanuel Muckenhuber
  */
-@Deprecated
 public final class DomainDescriptionProviders {
 
 
@@ -52,6 +52,13 @@ public final class DomainDescriptionProviders {
         }
     };
 
+    public static final DescriptionProvider SYSTEM_PROPERTY_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return DomainRootDescription.getSystemPropertiesDescription(locale);
+        }
+    };
+
     public static final DescriptionProvider PROFILE = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
@@ -59,10 +66,32 @@ public final class DomainDescriptionProviders {
         }
     };
 
+    public static final DescriptionProvider DEPLOYMENT_PROVIDER = new DescriptionProvider() {
+
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return DeploymentDescription.getDeploymentDescription(locale, false, true, false);
+        }
+    };
+
     public static final DescriptionProvider SERVER_GROUP = new DescriptionProvider() {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return ServerGroupDescription.getServerGroupDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider SERVER_GROUP_DEPLOYMENT = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return DeploymentDescription.getDeploymentDescription(locale, true, false, false);
+        }
+    };
+
+    public static final DescriptionProvider SERVER_GROUP_SYSTEM_PROPERTY_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(Locale locale) {
+            return ServerGroupDescription.getSystemPropertiesDescription(locale);
         }
     };
 }

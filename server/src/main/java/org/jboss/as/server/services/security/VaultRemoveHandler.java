@@ -26,7 +26,7 @@ import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.server.controller.descriptions.VaultDescriptions;
+import org.jboss.as.controller.descriptions.common.VaultDescriptions;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -60,9 +60,7 @@ public class VaultRemoveHandler extends AbstractRemoveStepHandler implements Des
 
     @Override
     protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
-        if (vaultReader != null) {
-            vaultReader.destroyVault();
-        }
+        vaultReader.destroyVault();
     }
 
     @Override

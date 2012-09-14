@@ -19,11 +19,13 @@
 package org.jboss.as.controller.operations.common;
 
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
+import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import org.jboss.as.controller.descriptions.common.InterfaceDescription;
 import org.jboss.dmr.ModelNode;
 
 /**
@@ -31,7 +33,7 @@ import org.jboss.dmr.ModelNode;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class InterfaceRemoveHandler extends AbstractRemoveStepHandler {
+public class InterfaceRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
@@ -43,10 +45,15 @@ public class InterfaceRemoveHandler extends AbstractRemoveStepHandler {
     protected InterfaceRemoveHandler() {
     }
 
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return InterfaceDescription.getInterfaceRemoveOperation(locale);
+    }
 
     protected String getInterfaceName(ModelNode operation) {
         final ModelNode opAddr = operation.require(OP_ADDR);
         PathAddress address = PathAddress.pathAddress(opAddr);
-        return address.getLastElement().getValue();
+        String name = address.getLastElement().getValue();
+        return name;
     }
 }

@@ -86,6 +86,7 @@ import org.jboss.as.controller.transform.SubsystemDescriptionDump;
 import org.jboss.as.controller.transform.TransformerRegistry;
 import org.jboss.as.model.test.ChildFirstClassLoaderBuilder;
 import org.jboss.as.model.test.ModelTestBootOperationsBuilder;
+import org.jboss.as.model.test.ModelTestDelegate;
 import org.jboss.as.model.test.ModelTestKernelServices;
 import org.jboss.as.model.test.ModelTestModelControllerService;
 import org.jboss.as.model.test.ModelTestParser;
@@ -100,7 +101,7 @@ import org.xnio.IoUtils;
  *
  * @author <a href="kabir.khan@jboss.com">Kabir Khan</a>
  */
-final class SubsystemTestDelegate {
+final class SubsystemTestDelegate extends ModelTestDelegate {
 
     private final String TEST_NAMESPACE = "urn.org.jboss.test:1.0";
 

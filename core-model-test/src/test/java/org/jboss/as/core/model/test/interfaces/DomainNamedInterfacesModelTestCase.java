@@ -25,7 +25,7 @@ import junit.framework.Assert;
 
 import org.jboss.as.core.model.test.AbstractCoreModelTest;
 import org.jboss.as.core.model.test.KernelServices;
-import org.jboss.as.core.model.test.TestModelType;
+import org.jboss.as.core.model.test.ModelType;
 import org.jboss.as.model.test.ModelTestUtils;
 import org.jboss.dmr.ModelNode;
 import org.junit.Test;
@@ -38,7 +38,7 @@ public class DomainNamedInterfacesModelTestCase extends AbstractCoreModelTest {
 
     @Test
     public void testDomainInterfaces() throws Exception {
-        KernelServices kernelServices = createKernelServicesBuilder(TestModelType.DOMAIN)
+        KernelServices kernelServices = createKernelServicesBuilder(ModelType.DOMAIN)
             .setXmlResource("domain.xml")
             .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
@@ -49,7 +49,7 @@ public class DomainNamedInterfacesModelTestCase extends AbstractCoreModelTest {
 
     @Test
     public void testDomainEmptyInterfaces() throws Exception {
-        KernelServices kernelServices = createKernelServicesBuilder(TestModelType.DOMAIN)
+        KernelServices kernelServices = createKernelServicesBuilder(ModelType.DOMAIN)
             .setXmlResource("domain-empty.xml")
             .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());
@@ -57,7 +57,7 @@ public class DomainNamedInterfacesModelTestCase extends AbstractCoreModelTest {
         String marshalled = kernelServices.getPersistedSubsystemXml();
         ModelNode original = kernelServices.readWholeModel();
 
-        kernelServices = createKernelServicesBuilder(TestModelType.DOMAIN)
+        kernelServices = createKernelServicesBuilder(ModelType.DOMAIN)
                 .setXml(marshalled)
                 .build();
         Assert.assertTrue(kernelServices.isSuccessfulBoot());

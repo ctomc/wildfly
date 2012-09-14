@@ -18,21 +18,19 @@
  */
 package org.jboss.as.server.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.RUNTIME_NAME;
-
 import java.util.Locale;
-
 import org.jboss.as.controller.OperationContext;
-import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEPLOY;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
+
 /**
  * Handles undeployment from the runtime.
  *
@@ -57,10 +55,10 @@ public class DeploymentUndeployHandler implements OperationStepHandler, Descript
         return DeploymentDescription.getUndeployDeploymentOperation(locale);
     }
 
-    public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
+    public void execute(OperationContext context, ModelNode operation) {
         ModelNode model = context.readResourceForUpdate(PathAddress.EMPTY_ADDRESS).getModel();
-        final String deploymentUnitName = RUNTIME_NAME.resolveModelAttribute(context, model).asString();
-        model.get(ENABLED.getName()).set(false);
+        final String deploymentUnitName = model.require(RUNTIME_NAME).asString();
+        model.get(ENABLED).set(false);
 
         DeploymentHandlerUtil.undeploy(context, deploymentUnitName, vaultReader);
 

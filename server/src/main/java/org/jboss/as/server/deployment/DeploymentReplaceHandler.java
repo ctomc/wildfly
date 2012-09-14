@@ -21,14 +21,18 @@ package org.jboss.as.server.deployment;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ARCHIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CONTENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ENABLED;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.HASH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PATH;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REPLACE_DEPLOYMENT;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RUNTIME_NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TO_REPLACE;
-import static org.jboss.as.server.controller.resources.DeploymentAttributes.ENABLED;
-import static org.jboss.as.server.deployment.DeploymentHandlerUtils.getContents;
+
+import org.jboss.as.repository.ContentRepository;
+import org.jboss.as.repository.DeploymentFileRepository;
+import org.jboss.as.server.ServerMessages;
+import static org.jboss.as.server.deployment.AbstractDeploymentHandler.getContents;
 
 import java.util.Locale;
 
@@ -39,14 +43,11 @@ import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.common.DeploymentDescription;
 import org.jboss.as.controller.operations.validation.ModelTypeValidator;
 import org.jboss.as.controller.operations.validation.ParametersValidator;
 import org.jboss.as.controller.operations.validation.StringLengthValidator;
 import org.jboss.as.controller.registry.Resource;
-import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.ServerMessages;
-import org.jboss.as.server.controller.descriptions.DeploymentDescription;
 import org.jboss.as.server.services.security.AbstractVaultReader;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
@@ -88,7 +89,7 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
     }
 
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
-        //TODO readd validation and attributes
+        validator.validate(operation);
 
         String name = operation.require(NAME).asString();
         String toReplace = operation.require(TO_REPLACE).asString();
@@ -134,25 +135,18 @@ public class DeploymentReplaceHandler implements OperationStepHandler, Descripti
             final Resource deployResource = context.createResource(PathAddress.pathAddress(deployPath));
             deployNode = deployResource.getModel();
             deployNode.get(RUNTIME_NAME).set(runtimeName);
-
-            //TODO Remove these once converted to AD
-            deployNode.get(NAME).set(name);
-            //TODO Assumes this can only be set by client
-            deployNode.get(ModelDescriptionConstants.PERSISTENT).set(true);
-
-
             deployNode.get(CONTENT).set(content);
 
         } else {
             deployNode = context.readResourceForUpdate(PathAddress.pathAddress(deployPath)).getModel();
-            if (ENABLED.resolveModelAttribute(context, deployNode).asBoolean()) {
+            if (deployNode.get(ENABLED).asBoolean()) {
                 throw ServerMessages.MESSAGES.deploymentAlreadyStarted(toReplace);
             }
             runtimeName = deployNode.require(RUNTIME_NAME).asString();
         }
 
-        deployNode.get(ENABLED.getName()).set(true);
-        replaceNode.get(ENABLED.getName()).set(false);
+        deployNode.get(ENABLED).set(true);
+        replaceNode.get(ENABLED).set(false);
 
         final DeploymentHandlerUtil.ContentItem[] contents = getContents(deployNode.require(CONTENT));
         DeploymentHandlerUtil.replace(context, replaceNode, runtimeName, name, replacedName, vaultReader, contents);

@@ -34,7 +34,6 @@ import org.jboss.dmr.ModelNode;
  * @author <a href="mailto:darran.lofthouse@jboss.com">Darran Lofthouse</a>
  *
  */
-@Deprecated
 public final class HostDescriptionProviders {
 
     // Prevent instantiation
@@ -47,6 +46,20 @@ public final class HostDescriptionProviders {
         @Override
         public ModelNode getModelDescription(Locale locale) {
             return HostRootDescription.getDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider SYSTEM_PROPERTIES_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return HostRootDescription.getSystemPropertiesDescription(locale);
+        }
+    };
+
+    public static final DescriptionProvider SERVER_SYSTEM_PROPERTIES_PROVIDER = new DescriptionProvider() {
+        @Override
+        public ModelNode getModelDescription(final Locale locale) {
+            return HostServerDescription.getSystemPropertiesDescription(locale);
         }
     };
 }

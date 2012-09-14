@@ -40,13 +40,10 @@ import org.jboss.as.controller.ModelController;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ProcessType;
-import org.jboss.as.controller.ResourceDefinition;
 import org.jboss.as.controller.RunningModeControl;
-import org.jboss.as.controller.descriptions.DescriptionProvider;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.ConfigurationPersistenceException;
 import org.jboss.as.controller.persistence.ExtensibleConfigurationPersister;
-import org.jboss.as.controller.registry.ImmutableManagementResourceRegistration;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.PathManager;
@@ -54,10 +51,12 @@ import org.jboss.as.controller.services.path.PathManagerService;
 import org.jboss.as.platform.mbean.PlatformMBeanConstants;
 import org.jboss.as.platform.mbean.RootPlatformMBeanResource;
 import org.jboss.as.repository.ContentRepository;
-import org.jboss.as.server.controller.resources.ServerRootResourceDefinition;
+import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
+import org.jboss.as.server.deployment.dependencies.DeploymentDependenciesProcessor;
+import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayIndexService;
+import org.jboss.as.server.controller.descriptions.ServerDescriptionProviders;
 import org.jboss.as.server.deployment.Attachments;
 import org.jboss.as.server.deployment.ContentOverrideDeploymentUnitProcessor;
-import org.jboss.as.server.deployment.DeploymentCompleteServiceProcessor;
 import org.jboss.as.server.deployment.DeploymentMountProvider;
 import org.jboss.as.server.deployment.DeploymentPhaseContext;
 import org.jboss.as.server.deployment.DeploymentUnit;
@@ -69,7 +68,6 @@ import org.jboss.as.server.deployment.SubDeploymentProcessor;
 import org.jboss.as.server.deployment.annotation.AnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CleanupAnnotationIndexProcessor;
 import org.jboss.as.server.deployment.annotation.CompositeIndexProcessor;
-import org.jboss.as.server.deployment.dependencies.DeploymentDependenciesProcessor;
 import org.jboss.as.server.deployment.integration.Seam2Processor;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXMLParsingProcessor;
 import org.jboss.as.server.deployment.module.ClassFileTransformerProcessor;
@@ -95,7 +93,6 @@ import org.jboss.as.server.deployment.reflect.CleanupReflectionIndexProcessor;
 import org.jboss.as.server.deployment.reflect.InstallReflectionIndexProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorDependencyProcessor;
 import org.jboss.as.server.deployment.service.ServiceActivatorProcessor;
-import org.jboss.as.server.deploymentoverlay.service.DeploymentOverlayIndexService;
 import org.jboss.as.server.moduleservice.ExtensionIndexService;
 import org.jboss.as.server.moduleservice.ExternalModuleService;
 import org.jboss.as.server.moduleservice.ServiceModuleLoader;
@@ -132,7 +129,6 @@ public final class ServerService extends AbstractControllerService {
     private final RunningModeControl runningModeControl;
     private volatile ExtensibleConfigurationPersister extensibleConfigurationPersister;
     private final AbstractVaultReader vaultReader;
-    private final DelegatingResourceDefinition rootResourceDefinition;
 
     public static final String SERVER_NAME = "server";
 
@@ -142,17 +138,16 @@ public final class ServerService extends AbstractControllerService {
      * @param configuration the bootstrap configuration
      * @param prepareStep the prepare step to use
      */
-    private ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState,
-                  final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener, final DelegatingResourceDefinition rootResourceDefinition,
+    ServerService(final Bootstrap.Configuration configuration, final ControlledProcessState processState,
+                  final OperationStepHandler prepareStep, final BootstrapListener bootstrapListener,
                   final RunningModeControl runningModeControl, final AbstractVaultReader vaultReader) {
         super(getProcessType(configuration.getServerEnvironment()), runningModeControl, null, processState,
-                rootResourceDefinition, prepareStep, new RuntimeExpressionResolver(vaultReader));
+                ServerDescriptionProviders.ROOT_PROVIDER, prepareStep, new RuntimeExpressionResolver(vaultReader));
         this.configuration = configuration;
         this.bootstrapListener = bootstrapListener;
         this.processState = processState;
         this.runningModeControl = runningModeControl;
         this.vaultReader = vaultReader;
-        this.rootResourceDefinition = rootResourceDefinition;
     }
 
     static ProcessType getProcessType(ServerEnvironment serverEnvironment) {
@@ -192,8 +187,7 @@ public final class ServerService extends AbstractControllerService {
         final ServerExecutorService serverExecutorService = new ServerExecutorService(threadFactory);
         serviceTarget.addService(Services.JBOSS_SERVER_EXECUTOR, serverExecutorService).install();
 
-        DelegatingResourceDefinition rootResourceDefinition = new DelegatingResourceDefinition();
-        ServerService service = new ServerService(configuration, processState, null, bootstrapListener, rootResourceDefinition, runningModeControl, vaultReader);
+        ServerService service = new ServerService(configuration, processState, null, bootstrapListener, runningModeControl, vaultReader);
         ServiceBuilder<?> serviceBuilder = serviceTarget.addService(Services.JBOSS_SERVER_CONTROLLER, service);
         serviceBuilder.addDependency(DeploymentMountProvider.SERVICE_NAME,DeploymentMountProvider.class, service.injectedDeploymentRepository);
         serviceBuilder.addDependency(ContentRepository.SERVICE_NAME, ContentRepository.class, service.injectedContentRepository);
@@ -216,12 +210,6 @@ public final class ServerService extends AbstractControllerService {
         Bootstrap.ConfigurationPersisterFactory configurationPersisterFactory = configuration.getConfigurationPersisterFactory();
         extensibleConfigurationPersister = configurationPersisterFactory.createConfigurationPersister(serverEnvironment, getExecutorServiceInjector().getOptionalValue());
         setConfigurationPersister(extensibleConfigurationPersister);
-        rootResourceDefinition.setDelegate(
-                new ServerRootResourceDefinition(injectedContentRepository.getValue(),
-                        extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
-                        runningModeControl, vaultReader, configuration.getExtensionRegistry(),
-                        getExecutorServiceInjector().getOptionalValue() != null,
-                        (PathManagerService)injectedPathManagerService.getValue()));
         super.start(context);
     }
 
@@ -338,6 +326,7 @@ public final class ServerService extends AbstractControllerService {
 
     @Override
     protected void initModel(Resource rootResource, ManagementResourceRegistration rootRegistration) {
+        ServerControllerModelUtil.updateCoreModel(rootResource.getModel(), configuration.getServerEnvironment());
         ServerControllerModelUtil.initOperations(rootRegistration, injectedContentRepository.getValue(),
                 extensibleConfigurationPersister, configuration.getServerEnvironment(), processState,
                 runningModeControl, vaultReader, configuration.getExtensionRegistry(),
@@ -395,37 +384,4 @@ public final class ServerService extends AbstractControllerService {
             return executorService;
         }
     }
-
-    private static class DelegatingResourceDefinition implements ResourceDefinition {
-        private volatile ResourceDefinition delegate;
-
-        void setDelegate(ResourceDefinition delegate) {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public void registerOperations(ManagementResourceRegistration resourceRegistration) {
-            delegate.registerOperations(resourceRegistration);
-        }
-
-        @Override
-        public void registerChildren(ManagementResourceRegistration resourceRegistration) {
-            delegate.registerChildren(resourceRegistration);
-        }
-
-        @Override
-        public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-            delegate.registerAttributes(resourceRegistration);
-        }
-
-        @Override
-        public PathElement getPathElement() {
-            return delegate.getPathElement();
-        }
-
-        @Override
-        public DescriptionProvider getDescriptionProvider(ImmutableManagementResourceRegistration resourceRegistration) {
-            return delegate.getDescriptionProvider(resourceRegistration);
-        }
-    };
 }

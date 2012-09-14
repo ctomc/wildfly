@@ -23,6 +23,7 @@
 package org.jboss.as.logging;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.logging.LoggerOperations.createRollbackFailure;
 
 import org.jboss.as.controller.AbstractWriteAttributeHandler;
 import org.jboss.as.controller.AttributeDefinition;
@@ -138,7 +139,7 @@ final class LoggingOperations {
                                 performRollback(context, operation, logContextConfiguration, name);
                                 logContextConfiguration.commit();
                             } catch (OperationFailedException e) {
-                                throw LoggerOperations.createRollbackFailure(e);
+                                throw createRollbackFailure(e);
                             }
                         }
                     }
@@ -210,7 +211,7 @@ final class LoggingOperations {
                                 // Commit any new changes
                                 logContextConfiguration.commit();
                             } catch (OperationFailedException e) {
-                                throw LoggerOperations.createRollbackFailure(e);
+                                throw createRollbackFailure(e);
                             }
                         }
                     }
@@ -283,7 +284,7 @@ final class LoggingOperations {
                                 performRollback(context, operation, logContextConfiguration, name, originalModel);
                                 logContextConfiguration.commit();
                             } catch (OperationFailedException e) {
-                                throw LoggerOperations.createRollbackFailure(e);
+                                throw createRollbackFailure(e);
                             }
                         }
                     }

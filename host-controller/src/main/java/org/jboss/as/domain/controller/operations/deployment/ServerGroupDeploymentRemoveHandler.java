@@ -18,10 +18,13 @@
  */
 package org.jboss.as.domain.controller.operations.deployment;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
-
+import java.util.Locale;
 import org.jboss.as.controller.AbstractRemoveStepHandler;
 import org.jboss.as.controller.OperationContext;
+import org.jboss.as.controller.descriptions.DescriptionProvider;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import org.jboss.as.domain.controller.descriptions.ServerGroupDescription;
+import org.jboss.dmr.ModelNode;
 
 /**
  * Handles removal of a deployment from the model. This can be used at either the domain deployments level
@@ -29,13 +32,18 @@ import org.jboss.as.controller.OperationContext;
  *
  * @author Brian Stansberry (c) 2011 Red Hat Inc.
  */
-public class ServerGroupDeploymentRemoveHandler extends AbstractRemoveStepHandler {
+public class ServerGroupDeploymentRemoveHandler extends AbstractRemoveStepHandler implements DescriptionProvider {
 
     public static final String OPERATION_NAME = REMOVE;
 
     public static final ServerGroupDeploymentRemoveHandler INSTANCE = new ServerGroupDeploymentRemoveHandler();
 
     private ServerGroupDeploymentRemoveHandler() {
+    }
+
+    @Override
+    public ModelNode getModelDescription(Locale locale) {
+        return ServerGroupDescription.getDeploymentRemoveOperation(locale);
     }
 
     protected boolean requiresRuntime(OperationContext context) {

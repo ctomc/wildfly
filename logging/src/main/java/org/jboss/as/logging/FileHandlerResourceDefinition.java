@@ -35,7 +35,9 @@ import org.jboss.logmanager.handlers.FileHandler;
  */
 class FileHandlerResourceDefinition extends AbstractFileHandlerDefinition {
 
-    static final AttributeDefinition[] ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, APPEND, FILE);
+    static final AttributeDefinition[] WRITABLE_ATTRIBUTES = appendDefaultWritableAttributes(AUTOFLUSH, APPEND, FILE);
+    // Add attributes are a combination of writable and read-only attributes
+    static final AttributeDefinition[] ADD_ATTRIBUTES = appendDefaultReadOnlyAttributes(WRITABLE_ATTRIBUTES);
     /**
      * Operation step handlers for {@link org.jboss.logmanager.handlers.FileHandler}.
      */
@@ -43,7 +45,7 @@ class FileHandlerResourceDefinition extends AbstractFileHandlerDefinition {
     private FileHandlerResourceDefinition() {
         super(LoggingExtension.FILE_HANDLER_PATH,
                 FILE_HANDLER,
-                new HandlerOperations.HandlerAddOperationStepHandler(FileHandler.class, ATTRIBUTES, FILE, APPEND),
-                ATTRIBUTES);
+                new HandlerOperations.HandlerAddOperationStepHandler(FileHandler.class, ADD_ATTRIBUTES, FILE, APPEND),
+                WRITABLE_ATTRIBUTES);
     }
 }

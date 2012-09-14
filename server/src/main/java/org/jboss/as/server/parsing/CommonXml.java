@@ -22,6 +22,45 @@
 
 package org.jboss.as.server.parsing;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.xml.stream.Location;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+
+import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.SimpleAttributeDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.operations.common.NamespaceAddHandler;
+import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
+import org.jboss.as.controller.operations.common.SystemPropertyAddHandler;
+import org.jboss.as.controller.operations.common.Util;
+import org.jboss.as.controller.parsing.Attribute;
+import org.jboss.as.controller.parsing.Element;
+import org.jboss.as.controller.parsing.Namespace;
+import org.jboss.as.controller.parsing.ParseUtils;
+import org.jboss.as.controller.persistence.ModelMarshallingContext;
+import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
+import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
+import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.OutboundSocketBindingResourceDefinition;
+import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
+import org.jboss.dmr.ModelNode;
+import org.jboss.dmr.ModelType;
+import org.jboss.dmr.Property;
+import org.jboss.staxmapper.XMLElementReader;
+import org.jboss.staxmapper.XMLElementWriter;
+import org.jboss.staxmapper.XMLExtendedStreamReader;
+import org.jboss.staxmapper.XMLExtendedStreamWriter;
+
 import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static org.jboss.as.controller.ControllerMessages.MESSAGES;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
@@ -70,46 +109,6 @@ import static org.jboss.as.controller.parsing.ParseUtils.requireSingleAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedAttribute;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedElement;
 import static org.jboss.as.controller.parsing.ParseUtils.unexpectedEndElement;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.stream.Location;
-import javax.xml.stream.XMLStreamConstants;
-import javax.xml.stream.XMLStreamException;
-
-import org.jboss.as.controller.HashUtil;
-import org.jboss.as.controller.SimpleAttributeDefinition;
-import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
-import org.jboss.as.controller.operations.common.NamespaceAddHandler;
-import org.jboss.as.controller.operations.common.SchemaLocationAddHandler;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.as.controller.parsing.Attribute;
-import org.jboss.as.controller.parsing.Element;
-import org.jboss.as.controller.parsing.Namespace;
-import org.jboss.as.controller.parsing.ParseUtils;
-import org.jboss.as.controller.persistence.ModelMarshallingContext;
-import org.jboss.as.controller.resource.AbstractSocketBindingResourceDefinition;
-import org.jboss.as.controller.resource.SocketBindingGroupResourceDefinition;
-import org.jboss.as.server.controller.resources.SystemPropertyResourceDefinition;
-import org.jboss.as.server.operations.SystemPropertyAddHandler;
-import org.jboss.as.server.services.net.LocalDestinationOutboundSocketBindingResourceDefinition;
-import org.jboss.as.server.services.net.OutboundSocketBindingResourceDefinition;
-import org.jboss.as.server.services.net.RemoteDestinationOutboundSocketBindingResourceDefinition;
-import org.jboss.dmr.ModelNode;
-import org.jboss.dmr.ModelType;
-import org.jboss.dmr.Property;
-import org.jboss.staxmapper.XMLElementReader;
-import org.jboss.staxmapper.XMLElementWriter;
-import org.jboss.staxmapper.XMLExtendedStreamReader;
-import org.jboss.staxmapper.XMLExtendedStreamWriter;
 
 /**
  * Bits of parsing and marshalling logic that are common across more than one of standalone.xml, domain.xml and host.xml.
@@ -379,11 +378,9 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 throw unexpectedElement(reader);
             }
 
-            boolean setName = false;
-            boolean setValue = false;
-            boolean setBoottime = false;
-            //Will set OP_ADDR after parsing the NAME attribute
-            ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, new ModelNode());
+            String name = null;
+            ModelNode value = null;
+            Boolean boottime = null;
             final int count = reader.getAttributeCount();
             for (int i = 0; i < count; i++) {
                 final String val = reader.getAttributeValue(i);
@@ -394,31 +391,24 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
 
                     switch (attribute) {
                         case NAME: {
-                            if (setName) {
+                            if (name != null) {
                                 throw ParseUtils.duplicateAttribute(reader, NAME);
                             }
-                            setName = true;
-                            ModelNode addr = new ModelNode().set(address).add(SYSTEM_PROPERTY, val);
-                            op.get(OP_ADDR).set(addr);
+                            name = val;
                             break;
                         }
                         case VALUE: {
-                            if (setValue) {
+                            if (value != null) {
                                 throw ParseUtils.duplicateAttribute(reader, VALUE);
                             }
-                            setValue = true;
-                            SystemPropertyResourceDefinition.VALUE.parseAndSetParameter(val, op, reader);
+                            value = ParseUtils.parsePossibleExpression(val);
                             break;
                         }
                         case BOOT_TIME: {
                             if (standalone) {
                                 throw unexpectedAttribute(reader, i);
                             }
-                            if (setBoottime) {
-                                throw ParseUtils.duplicateAttribute(reader, BOOT_TIME);
-                            }
-                            setValue = true;
-                            SystemPropertyResourceDefinition.BOOT_TIME.parseAndSetParameter(val, op, reader);
+                            boottime = Boolean.valueOf(val);
                             break;
                         }
                         default: {
@@ -428,8 +418,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 }
             }
             requireNoContent(reader);
-            if (!setName) {
-                throw ParseUtils.missingRequired(reader, Collections.singleton(NAME));
+
+            ModelNode propAddr = new ModelNode().set(address).add(SYSTEM_PROPERTY, name);
+            ModelNode op = Util.getEmptyOperation(SystemPropertyAddHandler.OPERATION_NAME, propAddr);
+            op.get(VALUE).set(value);
+            if (boottime != null) {
+                op.get(BOOT_TIME).set(boottime.booleanValue());
             }
 
             updates.add(op);
@@ -1257,38 +1251,6 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
         list.add(vault);
     }
 
-    protected void parseVaultOption(XMLExtendedStreamReader reader, ModelNode vaultOptions) throws XMLStreamException {
-        String name = null;
-        String val = null;
-        EnumSet<Attribute> required = EnumSet.of(Attribute.NAME, Attribute.VALUE);
-        final int count = reader.getAttributeCount();
-        for (int i = 0; i < count; i++) {
-            requireNoNamespaceAttribute(reader, i);
-            final String value = reader.getAttributeValue(i);
-            final Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-            required.remove(attribute);
-            switch (attribute) {
-                case NAME: {
-                    name = value;
-                    break;
-                }
-                case VALUE: {
-                    val = value;
-                    break;
-                }
-                default:
-                    throw unexpectedAttribute(reader, i);
-            }
-        }
-
-        if (required.size() > 0) {
-            throw missingRequired(reader, required);
-        }
-
-        vaultOptions.get(name).set(val);
-        requireNoContent(reader);
-    }
-
     protected void parseModuleOption(XMLExtendedStreamReader reader, ModelNode moduleOptions) throws XMLStreamException {
         String name = null;
         String val = null;
@@ -1554,9 +1516,11 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 writer.writeStartElement(Element.PROPERTY.getLocalName());
                 writeAttribute(writer, Attribute.NAME, prop.getName());
                 ModelNode sysProp = prop.getValue();
-                SystemPropertyResourceDefinition.VALUE.marshallAsAttribute(sysProp, writer);
-                if (!standalone) {
-                    SystemPropertyResourceDefinition.BOOT_TIME.marshallAsAttribute(sysProp, writer);
+                if (sysProp.hasDefined(VALUE)) {
+                    writeAttribute(writer, Attribute.VALUE, sysProp.get(VALUE).asString());
+                }
+                if (!standalone && sysProp.hasDefined(BOOT_TIME) && !sysProp.get(BOOT_TIME).asBoolean()) {
+                    writeAttribute(writer, Attribute.BOOT_TIME, "false");
                 }
 
                 writer.writeEndElement();

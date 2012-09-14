@@ -44,7 +44,7 @@ enum Attribute {
     MAX_INCLUSIVE(CommonAttributes.MAX_INCLUSIVE),
     MAX_LEVEL(CommonAttributes.MAX_LEVEL),
     MODULE(CommonAttributes.MODULE),
-    NAME(CommonAttributes.HANDLER_NAME),
+    NAME(CommonAttributes.NAME),
     NEW_LEVEL(CommonAttributes.NEW_LEVEL),
     OVERFLOW_ACTION(CommonAttributes.OVERFLOW_ACTION),
     PATH(CommonAttributes.PATH),
