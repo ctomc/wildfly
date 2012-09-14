@@ -116,7 +116,7 @@ public class DeploymentAttributes {
                     .build();
 
     /** Attributes for server deployment resource */
-    public static final AttributeDefinition[] SERVER_RESOURCE_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, CONTENT_ALL, ENABLED, PERSISTENT, STATUS};
+    public static final AttributeDefinition[] SERVER_RESOURCE_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, CONTENT_RESOURCE, ENABLED, PERSISTENT, STATUS};
 
     /** Attributes for server deployment add */
     public static final AttributeDefinition[] SERVER_ADD_ATTRIBUTES = new AttributeDefinition[] { RUNTIME_NAME, CONTENT_ALL, ENABLED, PERSISTENT, STATUS};
@@ -128,7 +128,7 @@ public class DeploymentAttributes {
     public static final AttributeDefinition[] SERVER_GROUP_ADD_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, ENABLED};
 
     /** Attributes for domain deployment resource */
-    public static final AttributeDefinition[] DOMAIN_RESOURCE_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, CONTENT_ALL};
+    public static final AttributeDefinition[] DOMAIN_RESOURCE_ATTRIBUTES = new AttributeDefinition[] {NAME, RUNTIME_NAME, CONTENT_RESOURCE};
 
     /** Attributes for domain deployment add */
     public static final AttributeDefinition[] DOMAIN_ADD_ATTRIBUTES = new AttributeDefinition[] {RUNTIME_NAME, CONTENT_ALL};
