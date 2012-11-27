@@ -44,15 +44,15 @@ import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
  * @author Jean-Frederic Clere
  * @author Tomaz Cerar
  */
-public class ModClusterExtension implements XMLStreamConstants, Extension {
+public class ModClusterExtension implements Extension {
 
     public static final String SUBSYSTEM_NAME = "modcluster";
     private static final int MANAGEMENT_API_MAJOR_VERSION = 1;
-    private static final int MANAGEMENT_API_MINOR_VERSION = 2;
+    private static final int MANAGEMENT_API_MINOR_VERSION = 3;
     private static final int MANAGEMENT_API_MICRO_VERSION = 0;
 
     static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, ModClusterExtension.SUBSYSTEM_NAME);
-    static final PathElement CONFIGURATION_PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
+    static final PathElement LEGACY_CONFIGURATION_PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
     static final PathElement SSL_CONFIGURATION_PATH = PathElement.pathElement(CommonAttributes.SSL, CommonAttributes.CONFIGURATION);
     static final PathElement DYNAMIC_LOAD_PROVIDER = PathElement.pathElement(CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.CONFIGURATION);
     static final PathElement LOAD_METRIC = PathElement.pathElement(CommonAttributes.LOAD_METRIC);
@@ -78,9 +78,7 @@ public class ModClusterExtension implements XMLStreamConstants, Extension {
 
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
-        final ManagementResourceRegistration registration = subsystem.registerSubsystemModel(new ModClusterDefinition(context.isRuntimeOnlyRegistrationValid()));
-
-        final ManagementResourceRegistration configuration = registration.registerSubModel(new ModClusterConfigResourceDefinition());
+        final ManagementResourceRegistration configuration = subsystem.registerSubsystemModel(new ModClusterConfigResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
 
         configuration.registerSubModel(new ModClusterSSLResourceDefinition());
         final ManagementResourceRegistration dynamicLoadProvider = configuration.registerSubModel(DynamicLoadProviderDefinition.INSTANCE);

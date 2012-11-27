@@ -97,7 +97,7 @@ public class ModClusterSSLResourceDefinition extends SimpleResourceDefinition {
 
     public ModClusterSSLResourceDefinition() {
         super(ModClusterExtension.SSL_CONFIGURATION_PATH,
-                ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.SSL),
+                ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.SSL),
                 ModClusterAddSSL.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()
         );

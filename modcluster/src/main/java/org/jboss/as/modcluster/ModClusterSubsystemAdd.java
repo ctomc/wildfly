@@ -81,7 +81,7 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
                                   ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
 
         final ModelNode fullModel = Resource.Tools.readModel(context.readResource(PathAddress.EMPTY_ADDRESS));
-        final ModelNode modelConfig = fullModel.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair());
+        final ModelNode modelConfig = fullModel;
         final ModClusterConfig config = getModClusterConfig(context, modelConfig);
         final LoadBalanceFactorProvider loadProvider = getModClusterLoadProvider(context, modelConfig);
         final String connector = CONNECTOR.resolveModelAttribute(context, modelConfig).asString();
@@ -109,18 +109,23 @@ class ModClusterSubsystemAdd extends AbstractAddStepHandler {
     protected void populateModel(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         if (operation.hasDefined(CommonAttributes.MOD_CLUSTER_CONFIG)) {
             PathAddress opAddress = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.OP_ADDR));
-            PathAddress parent = opAddress.append(ModClusterExtension.CONFIGURATION_PATH);
+            PathAddress parent = opAddress;
             ModelNode targetOperation = Util.createAddOperation(parent);
             for (AttributeDefinition def : ModClusterConfigResourceDefinition.ATTRIBUTES) {
                 def.validateAndSet(operation, targetOperation);
             }
-            context.addStep(targetOperation, ModClusterConfigAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
+            context.addStep(targetOperation, ModClusterSubsystemAdd.INSTANCE, OperationContext.Stage.IMMEDIATE);
+        } else {
+            this.populateModel(operation, resource.getModel());
         }
     }
 
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-
+        for (AttributeDefinition attribute : ModClusterConfigResourceDefinition.ATTRIBUTES) {
+            attribute.validateAndSet(operation, model);
+        }
+        ModClusterConfigResourceDefinition.SIMPLE_LOAD_PROVIDER.validateAndSet(operation, model);
     }
 
     private ModClusterConfig getModClusterConfig(final OperationContext context, ModelNode model) throws OperationFailedException {

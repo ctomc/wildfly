@@ -52,7 +52,7 @@ public class DynamicLoadProviderDefinition extends SimpleResourceDefinition {
 
     private DynamicLoadProviderDefinition() {
         super(ModClusterExtension.DYNAMIC_LOAD_PROVIDER,
-                ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER),
+                ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.DYNAMIC_LOAD_PROVIDER),
                 DynamicLoadProviderAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()
         );

@@ -53,10 +53,11 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
 
         PathAddress address = PathAddress.pathAddress(ModClusterExtension.SUBSYSTEM_PATH);
 
-        final ModelNode subsystem = new ModelNode();
+        /*final ModelNode subsystem = new ModelNode();
         subsystem.get(OP).set(ADD);
         subsystem.get(OP_ADDR).set(address.toModelNode());
-        list.add(subsystem);
+        subsystem.get("connector").set("ajp");
+        list.add(subsystem);*/
 
         // Reads it
         while (reader.hasNext() && reader.nextTag() != END_ELEMENT) {
@@ -73,8 +74,8 @@ public class ModClusterSubsystemXMLReader_1_0 implements XMLElementReader<List<M
     }
 
     void parseModClusterConfig(XMLExtendedStreamReader reader, List<ModelNode> list, PathAddress parent) throws XMLStreamException {
-        PathAddress address = parent.append(ModClusterExtension.CONFIGURATION_PATH);
-        final ModelNode config = Util.createAddOperation(address);
+        PathAddress address = parent;
+        final ModelNode config = Util.createAddOperation(parent);
         list.add(config);
 
         // Parse the attributes.

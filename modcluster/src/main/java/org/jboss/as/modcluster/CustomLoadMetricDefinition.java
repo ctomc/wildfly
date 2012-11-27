@@ -50,7 +50,7 @@ public class CustomLoadMetricDefinition extends SimpleResourceDefinition {
 
     private CustomLoadMetricDefinition() {
         super(ModClusterExtension.CUSTOM_LOAD_METRIC,
-                ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION, CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.LOAD_METRIC),
+                ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.DYNAMIC_LOAD_PROVIDER, CommonAttributes.LOAD_METRIC),
                 CustomLoadMetricAdd.INSTANCE,
                 new ReloadRequiredRemoveStepHandler()
         );

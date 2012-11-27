@@ -48,11 +48,7 @@ public class ModClusterSubsystemXMLWriter implements XMLElementWriter<SubsystemM
         context.startSubsystemElement(Namespace.CURRENT.getUri(), false);
 
         ModelNode node = context.getModelNode();
-        if (node.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair()).isDefined()) {
-            writeModClusterConfig(writer, node.get(ModClusterExtension.CONFIGURATION_PATH.getKeyValuePair()));
-        } else {
-            writeModClusterConfig(writer, node);
-        }
+        writeModClusterConfig(writer, node);
         writer.writeEndElement();
     }
 

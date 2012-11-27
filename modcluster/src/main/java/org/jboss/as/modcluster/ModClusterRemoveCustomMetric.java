@@ -41,7 +41,6 @@ public class ModClusterRemoveCustomMetric implements OperationStepHandler {
     public void execute(OperationContext context, ModelNode operation) throws OperationFailedException {
         PathAddress parent = PathAddress.pathAddress(
                 ModClusterExtension.SUBSYSTEM_PATH,
-                ModClusterExtension.CONFIGURATION_PATH,
                 ModClusterExtension.DYNAMIC_LOAD_PROVIDER);
 
         String clazz = CustomLoadMetricDefinition.CLASS.resolveModelAttribute(context, operation).asString();

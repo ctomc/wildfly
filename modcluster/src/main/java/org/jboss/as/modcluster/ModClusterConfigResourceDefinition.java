@@ -22,7 +22,10 @@
 
 package org.jboss.as.modcluster;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.ResourceDefinition;
@@ -31,8 +34,11 @@ import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.DefaultOperationDescriptionProvider;
+import org.jboss.as.controller.descriptions.DefaultResourceAddDescriptionProvider;
 import org.jboss.as.controller.descriptions.DescriptionProvider;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
+import org.jboss.as.controller.operations.common.GenericSubsystemDescribeHandler;
 import org.jboss.as.controller.operations.validation.IntRangeValidator;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
@@ -237,6 +243,34 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
     public static final Map<String, SimpleAttributeDefinition> ATTRIBUTES_BY_NAME;
 
+    /**
+     * Runtime only.
+     */
+    public static final SimpleAttributeDefinition PORT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.PORT, ModelType.INT, false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setStorageRuntime()
+            .build();
+    public static final SimpleAttributeDefinition HOST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.HOST, ModelType.STRING, false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setStorageRuntime()
+            .build();
+    public static final SimpleAttributeDefinition VIRUTAL_HOST = SimpleAttributeDefinitionBuilder.create(CommonAttributes.VIRUTAL_HOST, ModelType.STRING, false)
+            .addFlag(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setStorageRuntime()
+            .build();
+    public static final SimpleAttributeDefinition CONTEXT = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CONTEXT, ModelType.STRING, false)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setStorageRuntime()
+            .build();
+
+    public static final SimpleAttributeDefinition WAIT_TIME = SimpleAttributeDefinitionBuilder.create(CommonAttributes.WAIT_TIME, ModelType.INT, true)
+            .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+            .setStorageRuntime()
+            .build();
+
+    private final boolean runtimeOnly;
+
+
     static {
         Map<String, SimpleAttributeDefinition> attrs = new HashMap<String, SimpleAttributeDefinition>();
         for (AttributeDefinition attr : ATTRIBUTES) {
@@ -245,11 +279,12 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
         ATTRIBUTES_BY_NAME = Collections.unmodifiableMap(attrs);
     }
 
-    public ModClusterConfigResourceDefinition() {
-        super(ModClusterExtension.CONFIGURATION_PATH,
-                ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION),
-                ModClusterConfigAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler());
+    public ModClusterConfigResourceDefinition(boolean runtimeOnly) {
+        super(ModClusterExtension.SUBSYSTEM_PATH,
+                ModClusterExtension.getResourceDescriptionResolver(),
+                ModClusterSubsystemAdd.INSTANCE,
+                ModClusterSubsystemRemove.INSTANCE);
+        this.runtimeOnly = runtimeOnly;
     }
 
     @Override
@@ -263,6 +298,9 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     @Override
     public void registerOperations(ManagementResourceRegistration resourceRegistration) {
         super.registerOperations(resourceRegistration);
+
+        // Register default operations. Note that "connector" is a required parameter on subsystem ADD operation.
+        resourceRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
 
         final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
 
@@ -280,5 +318,57 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
         final DescriptionProvider removeCustomMetric = new DefaultOperationDescriptionProvider(CommonAttributes.REMOVE_CUSTOM_METRIC, rootResolver, CustomLoadMetricDefinition.CLASS);
         resourceRegistration.registerOperationHandler(CommonAttributes.REMOVE_CUSTOM_METRIC, ModClusterRemoveCustomMetric.INSTANCE, removeCustomMetric, false, runtimeOnlyFlags);
+
+        if (runtimeOnly) {
+            registerRuntimeOperations(resourceRegistration);
+        }
+    }
+
+    public void registerRuntimeOperations(ManagementResourceRegistration registration) {
+        EnumSet<OperationEntry.Flag> runtimeOnlyFlags = EnumSet.of(OperationEntry.Flag.RUNTIME_ONLY);
+        final ResourceDescriptionResolver rootResolver = getResourceDescriptionResolver();
+
+        final DescriptionProvider listProxiesDescription = new DefaultOperationDescriptionProvider(CommonAttributes.LIST_PROXIES, rootResolver);
+        registration.registerOperationHandler(CommonAttributes.LIST_PROXIES, ModClusterListProxies.INSTANCE, listProxiesDescription, false, runtimeOnlyFlags);
+
+        final DescriptionProvider readProxiesInfoDescription = new DefaultOperationDescriptionProvider(CommonAttributes.READ_PROXIES_INFO, rootResolver);
+        registration.registerOperationHandler(CommonAttributes.READ_PROXIES_INFO, ModClusterGetProxyInfo.INSTANCE, readProxiesInfoDescription, false, runtimeOnlyFlags);
+
+        final DescriptionProvider readProxiesInfoConfiguration = new DefaultOperationDescriptionProvider(CommonAttributes.READ_PROXIES_CONFIGURATION, rootResolver);
+        registration.registerOperationHandler(CommonAttributes.READ_PROXIES_CONFIGURATION, ModClusterGetProxyConfiguration.INSTANCE, readProxiesInfoConfiguration, false, runtimeOnlyFlags);
+
+        // TODO: These seem to be modifying the state so don't add the runtimeOnly stuff for now
+        final DescriptionProvider addProxy = new DefaultOperationDescriptionProvider(CommonAttributes.ADD_PROXY, rootResolver, HOST, PORT);
+        registration.registerOperationHandler(CommonAttributes.ADD_PROXY, ModClusterAddProxy.INSTANCE, addProxy, false);
+
+        final DescriptionProvider removeProxy = new DefaultOperationDescriptionProvider(CommonAttributes.REMOVE_PROXY, rootResolver, HOST, PORT);
+        registration.registerOperationHandler(CommonAttributes.REMOVE_PROXY, ModClusterRemoveProxy.INSTANCE, removeProxy, false);
+
+        // Node related operations
+        final DescriptionProvider refresh = new DefaultOperationDescriptionProvider(CommonAttributes.REFRESH, rootResolver);
+        registration.registerOperationHandler(CommonAttributes.REFRESH, ModClusterRefresh.INSTANCE, refresh, false, runtimeOnlyFlags);
+
+        final DescriptionProvider reset = new DefaultOperationDescriptionProvider(CommonAttributes.RESET, rootResolver);
+        registration.registerOperationHandler(CommonAttributes.RESET, ModClusterReset.INSTANCE, reset, false, runtimeOnlyFlags);
+
+        // Node (all contexts) related operations
+        final DescriptionProvider enable = new DefaultOperationDescriptionProvider(CommonAttributes.ENABLE, rootResolver);
+        registration.registerOperationHandler(CommonAttributes.ENABLE, ModClusterEnable.INSTANCE, enable, false);
+
+        final DescriptionProvider disable = new DefaultOperationDescriptionProvider(CommonAttributes.DISABLE, rootResolver);
+        registration.registerOperationHandler(CommonAttributes.DISABLE, ModClusterDisable.INSTANCE, disable, false);
+
+        final DescriptionProvider stop = new DefaultOperationDescriptionProvider(CommonAttributes.STOP, rootResolver);
+        registration.registerOperationHandler(CommonAttributes.STOP, ModClusterStop.INSTANCE, stop, false);
+
+        // Context related operations
+        final DescriptionProvider enableContext = new DefaultOperationDescriptionProvider(CommonAttributes.ENABLE_CONTEXT, rootResolver, VIRUTAL_HOST, CONTEXT);
+        registration.registerOperationHandler(CommonAttributes.ENABLE_CONTEXT, ModClusterEnableContext.INSTANCE, enableContext, false);
+
+        final DescriptionProvider disableContext = new DefaultOperationDescriptionProvider(CommonAttributes.DISABLE_CONTEXT, rootResolver, VIRUTAL_HOST, CONTEXT);
+        registration.registerOperationHandler(CommonAttributes.DISABLE_CONTEXT, ModClusterDisableContext.INSTANCE, disableContext, false);
+
+        final DescriptionProvider stopContext = new DefaultOperationDescriptionProvider(CommonAttributes.STOP_CONTEXT, rootResolver, VIRUTAL_HOST, CONTEXT, WAIT_TIME);
+        registration.registerOperationHandler(CommonAttributes.STOP_CONTEXT, ModClusterStopContext.INSTANCE, stopContext, false);
     }
 }
