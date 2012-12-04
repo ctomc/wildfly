@@ -22,6 +22,7 @@
 package org.jboss.as.jdr.vfs;
 
 import org.jboss.as.jdr.util.WildcardPattern;
+import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
 import org.jboss.vfs.VirtualFileFilter;
 import org.jboss.vfs.util.MatchAllVirtualFileFilter;
@@ -78,7 +79,7 @@ public class Filters {
 
     public static VirtualFileFilter wildcard(final String p){
         return new VirtualFileFilter() {
-            private WildcardPattern pattern = new WildcardPattern(p);
+            private WildcardPattern pattern = new WildcardPattern(p.startsWith("/") ? VFS.getChild(p).getPathName() : p);
             @Override
             public boolean accepts(VirtualFile file) {
                 return pattern.matches(file.getPathName());
