@@ -24,16 +24,19 @@ package org.jboss.as.modcluster;
 
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.AliasEntry;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.dmr.ModelNode;
 import org.jboss.staxmapper.XMLElementReader;
 
-import javax.xml.stream.XMLStreamConstants;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.jboss.as.modcluster.ModClusterLogger.ROOT_LOGGER;
@@ -79,11 +82,13 @@ public class ModClusterExtension implements Extension {
         final SubsystemRegistration subsystem = context.registerSubsystem(SUBSYSTEM_NAME, MANAGEMENT_API_MAJOR_VERSION,
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration configuration = subsystem.registerSubsystemModel(new ModClusterConfigResourceDefinition(context.isRuntimeOnlyRegistrationValid()));
-
-        configuration.registerSubModel(new ModClusterSSLResourceDefinition());
+        final ManagementResourceRegistration sslProvider = configuration.registerSubModel(new ModClusterSSLResourceDefinition());
         final ManagementResourceRegistration dynamicLoadProvider = configuration.registerSubModel(DynamicLoadProviderDefinition.INSTANCE);
         dynamicLoadProvider.registerSubModel(LoadMetricDefinition.INSTANCE);
         dynamicLoadProvider.registerSubModel(CustomLoadMetricDefinition.INSTANCE);
+
+        // Alias for legacy paths
+        configuration.registerAlias(LEGACY_CONFIGURATION_PATH, new ModClusterLegacyResourceAliasEntry(configuration));
 
         subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
     }
@@ -95,6 +100,31 @@ public class ModClusterExtension implements Extension {
             if (reader != null) {
                 context.setSubsystemXmlMapping(SUBSYSTEM_NAME, namespace.getUri(), namespace.getXMLReader());
             }
+        }
+    }
+
+    private static class ModClusterLegacyResourceAliasEntry extends AliasEntry {
+
+        public ModClusterLegacyResourceAliasEntry(ManagementResourceRegistration target) {
+            super(target);
+        }
+
+        @Override
+        public PathAddress convertToTargetAddress(PathAddress address) {
+            List<PathElement> list = new ArrayList<PathElement>();
+            Iterator<PathElement> it = address.iterator();
+            while (it.hasNext()) {
+                PathElement element = it.next();
+                String key = element.getKey();
+                if (key != null && key.equals(CommonAttributes.MOD_CLUSTER_CONFIG)) {
+                    // Skip this and following  "=configuration" segment
+                    //it.next();
+                    break;
+                } else {
+                    list.add(element);
+                }
+            }
+            return PathAddress.pathAddress(list);
         }
     }
 }
