@@ -88,7 +88,7 @@ public class ModClusterExtension implements Extension {
         dynamicLoadProvider.registerSubModel(CustomLoadMetricDefinition.INSTANCE);
 
         // Alias for legacy paths
-        configuration.registerAlias(LEGACY_CONFIGURATION_PATH, new ModClusterLegacyResourceAliasEntry(configuration));
+        configuration.registerSubModel(LegacyConfigDefinition.INSTANCE);
 
         subsystem.registerXMLElementWriter(new ModClusterSubsystemXMLWriter());
     }
@@ -112,9 +112,7 @@ public class ModClusterExtension implements Extension {
         @Override
         public PathAddress convertToTargetAddress(PathAddress address) {
             List<PathElement> list = new ArrayList<PathElement>();
-            Iterator<PathElement> it = address.iterator();
-            while (it.hasNext()) {
-                PathElement element = it.next();
+            for (PathElement element : address) {
                 String key = element.getKey();
                 if (key != null && key.equals(CommonAttributes.MOD_CLUSTER_CONFIG)) {
                     // Skip this and following  "=configuration" segment
