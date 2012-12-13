@@ -69,6 +69,7 @@ import java.util.concurrent.ExecutorService;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
@@ -903,8 +904,8 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
 
 
-        ModelNode groupAddress = address.clone().add(SOCKET_BINDING_GROUP, socketBindingGroupName);
-        op.get(OP_ADDR).set(groupAddress);
+        PathAddress groupAddress = PathAddress.pathAddress(address).append(SOCKET_BINDING_GROUP, socketBindingGroupName);
+        op.get(OP_ADDR).set(groupAddress.toModelNode());
 
         updates.add(op);
 
@@ -976,8 +977,8 @@ public class StandaloneXml extends CommonXml implements ManagementXml.Delegate {
         }
 
 
-        ModelNode groupAddress = address.clone().add(SOCKET_BINDING_GROUP, socketBindingGroupName);
-        op.get(OP_ADDR).set(groupAddress);
+        PathAddress groupAddress = PathAddress.pathAddress(address).append(SOCKET_BINDING_GROUP, socketBindingGroupName);
+        op.get(OP_ADDR).set(groupAddress.toModelNode());
 
         updates.add(op);
 

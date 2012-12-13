@@ -86,6 +86,7 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.NamespaceAddHandler;
@@ -692,14 +693,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected String parseSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces,
-                                        final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+                                        final PathAddress address, final List<ModelNode> updates) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         String name = null;
 
-        final ModelNode binding = new ModelNode();
-        binding.get(OP_ADDR); // undefined until we parse name
-        binding.get(OP).set(ADD);
+        final ModelNode binding = Util.createAddOperation();
 
         // Handle attributes
         final int count = reader.getAttributeCount();
@@ -713,7 +712,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                 switch (attribute) {
                     case NAME: {
                         name = value;
-                        binding.get(OP_ADDR).set(address).add(SOCKET_BINDING, name);
+                        binding.get(OP_ADDR).set(address.append(SOCKET_BINDING, name).toModelNode());
                         break;
                     }
                     case INTERFACE: {
@@ -811,13 +810,12 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
     }
 
     protected String parseOutboundSocketBinding(final XMLExtendedStreamReader reader, final Set<String> interfaces,
-                                                final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
+                                                final PathAddress address, final List<ModelNode> updates) throws XMLStreamException {
 
         final EnumSet<Attribute> required = EnumSet.of(Attribute.NAME);
         String outboundSocketBindingName = null;
 
-        final ModelNode outboundSocketBindingAddOperation = new ModelNode();
-        outboundSocketBindingAddOperation.get(OP).set(ADD); // address for this ADD operation will be set later, once the local-destination or remote-destination is parsed
+        final ModelNode outboundSocketBindingAddOperation = Util.createAddOperation();
 
         // Handle attributes
         final int count = reader.getAttributeCount();
@@ -874,8 +872,8 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     this.parseLocalDestinationOutboundSocketBinding(reader, outboundSocketBindingAddOperation);
                     // set the address of the add operation
                     // /socket-binding-group=<groupname>/local-destination-outbound-socket-binding=<outboundSocketBindingName>
-                    final ModelNode addr = address.clone().add(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName);
-                    outboundSocketBindingAddOperation.get(OP_ADDR).set(addr);
+                    final PathAddress addr = address.append(LOCAL_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName);
+                    outboundSocketBindingAddOperation.get(OP_ADDR).set(addr.toModelNode());
                     break;
                 }
                 case REMOTE_DESTINATION: {
@@ -888,7 +886,7 @@ public abstract class CommonXml implements XMLElementReader<List<ModelNode>>, XM
                     // parse the remote destination outbound socket binding
                     this.parseRemoteDestinationOutboundSocketBinding(reader, outboundSocketBindingAddOperation);
                     // /socket-binding-group=<groupname>/remote-destination-outbound-socket-binding=<outboundSocketBindingName>
-                    final ModelNode addr = address.clone().add(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName);
+                    final ModelNode addr = address.append(REMOTE_DESTINATION_OUTBOUND_SOCKET_BINDING, outboundSocketBindingName).toModelNode();
                     outboundSocketBindingAddOperation.get(OP_ADDR).set(addr);
                     break;
                 }

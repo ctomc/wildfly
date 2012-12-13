@@ -78,6 +78,7 @@ import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 
 import org.jboss.as.controller.HashUtil;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.extension.ExtensionRegistry;
 import org.jboss.as.controller.operations.common.Util;
@@ -547,12 +548,8 @@ public class DomainXml extends CommonXml {
         final String socketBindingGroupName = attrValues[0];
         final String defaultInterface = attrValues[1];
 
-        final ModelNode groupAddress = new ModelNode().set(address);
-        groupAddress.add(SOCKET_BINDING_GROUP, socketBindingGroupName);
-
-        final ModelNode bindingGroupUpdate = new ModelNode();
-        bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
-        bindingGroupUpdate.get(OP).set(ADD);
+        final PathAddress groupAddress = PathAddress.pathAddress(address).append(SOCKET_BINDING_GROUP, socketBindingGroupName);
+        final ModelNode bindingGroupUpdate = Util.createAddOperation(groupAddress);
 
         SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader);
         if (bindingGroupUpdate.get(SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.getName()).getType() != ModelType.EXPRESSION
@@ -607,12 +604,10 @@ public class DomainXml extends CommonXml {
         final String socketBindingGroupName = attrValues[0];
         final String defaultInterface = attrValues[1];
 
-        final ModelNode groupAddress = new ModelNode().set(address);
-        groupAddress.add(SOCKET_BINDING_GROUP, socketBindingGroupName);
+        final PathAddress groupAddress = PathAddress.pathAddress(address);
+        groupAddress.append(SOCKET_BINDING_GROUP, socketBindingGroupName);
 
-        final ModelNode bindingGroupUpdate = new ModelNode();
-        bindingGroupUpdate.get(OP_ADDR).set(groupAddress);
-        bindingGroupUpdate.get(OP).set(ADD);
+        final ModelNode bindingGroupUpdate = Util.createAddOperation(groupAddress);
 
         SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.parseAndSetParameter(defaultInterface, bindingGroupUpdate, reader);
         if (bindingGroupUpdate.get(SocketBindingGroupResourceDefinition.DEFAULT_INTERFACE.getName()).getType() != ModelType.EXPRESSION

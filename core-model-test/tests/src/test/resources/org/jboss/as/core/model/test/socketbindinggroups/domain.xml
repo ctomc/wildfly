@@ -7,12 +7,12 @@
   <socket-binding-groups>
     <socket-binding-group name="standard-sockets" default-interface="public">
         <socket-binding name="specified-interface" interface="management" port="1111"/>
-        <socket-binding name="default-interface" port="8009"/>
+        <socket-binding name="default-interface" port="${prop.binding.port:8009}"/>
         <outbound-socket-binding name="out-local">
             <local-destination socket-binding-ref="standard-sockets"/>
         </outbound-socket-binding>
         <outbound-socket-binding name="out-remote">
-            <remote-destination host="localhost" port="25"/>
+            <remote-destination host="${prop.out-binding.host:localhost}" port="${prop.out-binding.port:25}"/>
         </outbound-socket-binding>
     </socket-binding-group>
   </socket-binding-groups>
