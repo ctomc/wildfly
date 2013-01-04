@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<domain xmlns="urn:jboss:domain:1.4">
+    <interfaces>
+        <interface name="public"/>
+        <interface name="management"/>
+    </interfaces>
+    <socket-binding-groups>
+        <socket-binding-group name="standard-sockets" default-interface="${test.exp:public}">
+            <socket-binding name="specified-interface" interface="${test.exp:management}" port="${test.exp:1111}"/>
+            <socket-binding name="default-interface" port="${test.exp:8009}"/>
+            <socket-binding name="client-mapping" port="${test.exp:2222}">
+                <client-mapping destination-address="${test.exp:localhost}"/>
+                <client-mapping source-network="${test.exp:127.0.0.0/24}" destination-address="${test.exp:localhost}" destination-port="${test.exp:3333}"/>
+            </socket-binding>
+            <outbound-socket-binding name="out-local">
+                <local-destination socket-binding-ref="standard-sockets"/>
+            </outbound-socket-binding>
+            <outbound-socket-binding name="out-remote">
+                <remote-destination host="${test.exp:localhost}" port="${test.exp:25}"/>
+            </outbound-socket-binding>
+        </socket-binding-group>
+    </socket-binding-groups>
+</domain>

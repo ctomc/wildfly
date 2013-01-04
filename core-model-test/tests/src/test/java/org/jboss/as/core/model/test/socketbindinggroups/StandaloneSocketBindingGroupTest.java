@@ -35,6 +35,6 @@ public class StandaloneSocketBindingGroupTest extends AbstractSocketBindingGroup
 
     @Override
     protected String getXmlResource() {
-        return "standalone.xml";
+        return "standalone-expressions.xml";
     }
 }
