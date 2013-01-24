@@ -1223,7 +1223,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
     }
 
     static void parseDirectory(final XMLExtendedStreamReader reader, final String name, final ModelNode address, final List<ModelNode> updates) throws XMLStreamException {
-        String path = null;
+        ModelNode path = null;
         String relativeTo = null;
         final int count = reader.getAttributeCount();
         for (int i = 0; i < count; i++) {
@@ -1235,7 +1235,7 @@ public class MessagingSubsystemParser implements XMLStreamConstants, XMLElementR
                     relativeTo = value;
                     break;
                 case PATH:
-                    path = value;
+                    path = MessagingPathHandlers.PATHS.get(name).parse(value, reader.getLocation());
                     break;
                 default:
                     throw unexpectedAttribute(reader, i);

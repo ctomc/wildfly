@@ -22,7 +22,10 @@
 package org.jboss.as.clustering.infinispan.subsystem;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.VALUE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 import java.util.HashMap;
@@ -34,17 +37,21 @@ import java.util.ResourceBundle;
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
 import org.jboss.as.controller.ModelVersion;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
 import org.jboss.as.controller.parsing.ExtensionParsingContext;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.DiscardAttributesTransformer;
+import org.jboss.as.controller.transform.DiscardAttributesTransformer.DiscardApprover;
 import org.jboss.as.controller.transform.OperationTransformer;
 import org.jboss.as.controller.transform.RejectExpressionValuesTransformer;
 import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformationContext;
 import org.jboss.as.controller.transform.TransformersSubRegistration;
 import org.jboss.as.controller.transform.chained.ChainedOperationTransformer;
 import org.jboss.as.controller.transform.chained.ChainedResourceTransformer;
@@ -141,7 +148,7 @@ public class InfinispanExtension implements Extension {
         final RejectExpressionValuesTransformer transportReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_TRANSPORT_ATTRIBUTES);
         registerTransformer(containerRegistration, TransportResource.TRANSPORT_PATH, transportReject, transportReject, transportReject.getWriteAttributeTransformer(), null);
 
-        final InfinispanDiscardAttributesTransformer removeSelectedCacheAttributes = new InfinispanDiscardAttributesTransformer(ModelKeys.INDEXING_PROPERTIES, ModelKeys.SEGMENTS, ModelKeys.VIRTUAL_NODES);
+        final InfinispanDiscardAttributesTransformer removeSelectedCacheAttributes = new InfinispanDiscardAttributesTransformer(new InfinispanAttributeValueDiscardApprover(), ModelKeys.INDEXING_PROPERTIES, ModelKeys.SEGMENTS, ModelKeys.VIRTUAL_NODES);
         final RejectExpressionValuesTransformer cacheReject = new RejectExpressionValuesTransformer(InfinispanRejectedExpressions_1_3.REJECT_CACHE_ATTRIBUTES);
         final ChainedResourceTransformer chainedResource = new ChainedResourceTransformer(removeSelectedCacheAttributes, cacheReject.getChainedTransformer());
         final ChainedOperationTransformer chainedAdd = new ChainedOperationTransformer(removeSelectedCacheAttributes, cacheReject);
@@ -340,8 +347,34 @@ public class InfinispanExtension implements Extension {
     }
 
     private static class InfinispanDiscardAttributesTransformer extends DiscardAttributesTransformer {
-        InfinispanDiscardAttributesTransformer(String...attributes){
-            super(attributes);
+        public InfinispanDiscardAttributesTransformer(DiscardApprover discardApprover, String... attributeNames) {
+            super(discardApprover, attributeNames);
+        }
+
+    }
+
+    private static class InfinispanAttributeValueDiscardApprover implements DiscardApprover {
+
+        @Override
+        public boolean isResourceDiscardAllowed(TransformationContext context, PathAddress address, Resource resource) {
+            return discard(resource.getModel());
+        }
+
+        @Override
+        public boolean isOperationDiscardAllowed(TransformationContext context, PathAddress address, ModelNode operation) {
+            if (operation.get(OP).asString().equals(WRITE_ATTRIBUTE_OPERATION) || operation.get(OP).asString().equals(UNDEFINE_ATTRIBUTE_OPERATION)) {
+                if (operation.get(NAME).asString().equals(CacheResource.INDEXING_PROPERTIES.getName())) {
+                    //TODO: indexing-properties are not configurable in 7.1.x and should only be discarded if they have different values from the values assumed in 7.1.x.
+                    //Currently it is set up to discard if they are undefined
+                    return !operation.get(VALUE).isDefined();
+                }
+            }
+            return discard(operation);
+        }
+
+        private boolean discard(ModelNode model) {
+            return !model.hasDefined(CacheResource.INDEXING_PROPERTIES.getName());
         }
     }
+
 }
