@@ -73,12 +73,12 @@ public class CmpExtension implements Extension {
 
     private void registerTransformers(SubsystemRegistration subsystem) {
         ResourceTransformationDescriptionBuilder builder = TransformationDescriptionBuilder.Factory.createSubsystemInstance();
-        /*DiscardUndefinedAttributesTransformer discarder = new DiscardUndefinedAttributesTransformer(AbstractKeyGeneratorResourceDefinition.JNDI_NAME);
+        DiscardUndefinedAttributesTransformer discarder = new DiscardUndefinedAttributesTransformer(AbstractKeyGeneratorResourceDefinition.JNDI_NAME);
         builder.addChildResource(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH).setCustomResourceTransformer(discarder)
                 .addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(discarder)
                 .inheritResourceAttributeDefinitions()
                 .end()
-                .addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(discarder.getWriteAttributeTransformer())
+                .addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION).setDiscard(DiscardAttributeChecker.ALWAYS,AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
                 .inheritResourceAttributeDefinitions()
                 .end()
                 .addOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(discarder.getUndefineAttributeTransformer())
@@ -88,14 +88,13 @@ public class CmpExtension implements Extension {
                 .addOperationTransformationOverride(ModelDescriptionConstants.ADD).setCustomOperationTransformer(discarder)
                 .inheritResourceAttributeDefinitions()
                 .end()
-                .addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(discarder.getWriteAttributeTransformer())
+                .addOperationTransformationOverride(ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION).setDiscard(DiscardAttributeChecker.ALWAYS,AbstractKeyGeneratorResourceDefinition.JNDI_NAME)
                 .inheritResourceAttributeDefinitions()
                 .end()
                 .addOperationTransformationOverride(ModelDescriptionConstants.UNDEFINE_ATTRIBUTE_OPERATION).setCustomOperationTransformer(discarder.getUndefineAttributeTransformer())
                 .inheritResourceAttributeDefinitions()
                 .end();
-*/
-
+/*
         builder.addChildResource(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH).getAttributeBuilder().addRejectCheck(new RejectAttributeChecker.DefaultRejectAttributeChecker() {
             @Override
             protected boolean rejectAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
@@ -106,9 +105,9 @@ public class CmpExtension implements Extension {
             public String getRejectionLogMessage(Map<String, ModelNode> attributes) {
                 return null;
             }
-        }, AbstractKeyGeneratorResourceDefinition.JNDI_NAME).end();
-        //builder.addChildResource(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH).getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME).end();
-        builder.addChildResource(CmpSubsystemModel.HILO_KEY_GENERATOR_PATH).getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME).end();
+        }, AbstractKeyGeneratorResourceDefinition.JNDI_NAME).end();*/
+        /*builder.addChildResource(CmpSubsystemModel.UUID_KEY_GENERATOR_PATH).getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME).end();
+        builder.addChildResource(CmpSubsystemModel.HILO_KEY_GENERATOR_PATH).getAttributeBuilder().setDiscard(DiscardAttributeChecker.UNDEFINED, AbstractKeyGeneratorResourceDefinition.JNDI_NAME).end();*/
         TransformationDescription.Tools.register(builder.build(), subsystem, ModelVersion.create(1, 0, 0));
 
     }
