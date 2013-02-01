@@ -39,12 +39,18 @@ public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
 
     private final Map<String, ClusterConfiguration> clusterConfigs = new HashMap<String, ClusterConfiguration>();
     private long invocationTimeout;
+    private String ejbChannelName;
     private DeploymentNodeSelector deploymentNodeSelector = new LocalEJBReceiverPreferringDeploymentNodeSelector();
 
     @Override
     public String getEndpointName() {
         // The jboss-ejb-client.xml will *not* be used to create endpoints
         return null;
+    }
+
+    @Override
+    public String getEJBRemotingChannelName() {
+        return this.ejbChannelName;
     }
 
     @Override
@@ -104,6 +110,10 @@ public class JBossEJBClientXmlConfiguration implements EJBClientConfiguration {
 
     public void setInvocationTimeout(final long invocationTimeout) {
         this.invocationTimeout = invocationTimeout;
+    }
+
+    public void setEJBRemotingChannelName(final String channelName) {
+        this.ejbChannelName = channelName;
     }
 
     public void setDeploymentNodeSelector(final DeploymentNodeSelector deploymentNodeSelector) {

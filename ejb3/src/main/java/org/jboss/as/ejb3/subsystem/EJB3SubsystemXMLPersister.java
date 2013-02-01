@@ -26,6 +26,7 @@ import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.persistence.SubsystemMarshallingContext;
 import org.jboss.as.remoting.Attribute;
 import org.jboss.as.threads.ThreadsParser;
@@ -175,11 +176,10 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
             // </timer-service>
             writer.writeEndElement();
         }
-
-        // write the remote element
-        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(REMOTE)) {
-            writer.writeStartElement(EJB3SubsystemXMLElement.REMOTE.getLocalName());
-            writeRemote(writer, model.get(SERVICE, REMOTE));
+        // write the connectors element
+        if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(CONNECTORS)) {
+            writer.writeStartElement(EJB3SubsystemXMLElement.CONNECTORS.getLocalName());
+            writeConnectors(writer, model.get(SERVICE, CONNECTORS));
             writer.writeEndElement();
         }
 
@@ -242,9 +242,32 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
     }
 
 
+    protected void writeConnectors(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+        if (model.hasDefined(REMOTE)) {
+            final ModelNode remoteConnectorsModel = model.get(REMOTE);
+            for (final Property remoteConnectorModel : remoteConnectorsModel.asPropertyList()) {
+                writer.writeStartElement(EJB3SubsystemXMLElement.REMOTE.getLocalName());
+                writer.writeAttribute(Attribute.NAME.getLocalName(), remoteConnectorModel.getName());
+                writeRemote(writer, remoteConnectorModel.getValue());
+                writer.writeEndElement();
+            }
+        }
+    }
+
     protected void writeRemote(final XMLExtendedStreamWriter writer, final ModelNode model) throws XMLStreamException {
+//        // older model allowed unnamed remote connector. Newer model doesn't. We use an auto generated name here
+//        final String connectorName;
+//        if (model.hasDefined(ModelDescriptionConstants.NAME)) {
+//            connectorName = model.require(ModelDescriptionConstants.NAME).asString();
+//        } else {
+//            connectorName = "auto-generated-name";
+//        }
+//        writer.writeAttribute(EJB3SubsystemXMLAttribute.NAME.getLocalName(), connectorName);
         writer.writeAttribute(EJB3SubsystemXMLAttribute.CONNECTOR_REF.getLocalName(), model.require(EJB3SubsystemModel.CONNECTOR_REF).asString());
         writer.writeAttribute(EJB3SubsystemXMLAttribute.THREAD_POOL_NAME.getLocalName(), model.require(EJB3SubsystemModel.THREAD_POOL_NAME).asString());
+        if (model.hasDefined(EJB_CHANNEL_NAME)) {
+            writer.writeAttribute(EJB3SubsystemXMLAttribute.EJB_CHANNEL_NAME.getLocalName(), model.get(EJB3SubsystemModel.EJB_CHANNEL_NAME).asString());
+        }
 
         // write out any channel creation options
         if (model.hasDefined(CHANNEL_CREATION_OPTIONS)) {

@@ -43,10 +43,13 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
 import org.jboss.as.ejb3.EjbMessages;
-import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 import org.jboss.msc.service.ServiceName;
+
+
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.WRITE_ATTRIBUTE_OPERATION;
 
 
 /**
@@ -56,8 +59,6 @@ import org.jboss.msc.service.ServiceName;
  * @author Jaikiran Pai
  */
 class ChannelCreationOptionResource extends SimpleResourceDefinition {
-
-    static final ChannelCreationOptionResource INSTANCE = new ChannelCreationOptionResource();
 
     /**
      * Attribute definition of the channel creation option "value"
@@ -73,22 +74,21 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
     static final SimpleAttributeDefinition CHANNEL_CREATION_OPTION_TYPE = new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.TYPE, ModelType.STRING, true)
             .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES).setValidator(AllowedChannelOptionTypesValidator.INSTANCE).build();
 
-    ChannelCreationOptionResource() {
+    protected final EJB3RemoteConnectorAdd parentResourceAddHandler;
+
+    ChannelCreationOptionResource(final EJB3RemoteConnectorAdd parentResourceAddHandler) {
         super(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS),
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS),
-                new ChannelCreationOptionAdd(),
-                new ChannelCreationOptionRemove());
+                new ChannelCreationOptionAdd(parentResourceAddHandler),
+                new ChannelCreationOptionRemove(parentResourceAddHandler));
+
+        this.parentResourceAddHandler = parentResourceAddHandler;
     }
 
     @Override
     public void registerAttributes(ManagementResourceRegistration resourceRegistration) {
-        resourceRegistration.registerReadWriteAttribute(CHANNEL_CREATION_OPTION_VALUE, null, new ChannelCreationOptionWriteAttributeHandler(CHANNEL_CREATION_OPTION_VALUE));
-        resourceRegistration.registerReadWriteAttribute(CHANNEL_CREATION_OPTION_TYPE, null, new ChannelCreationOptionWriteAttributeHandler(CHANNEL_CREATION_OPTION_TYPE));
-    }
-
-    private static void recreateParentService(OperationContext context, ModelNode ejb3RemoteServiceModelNode,
-                                              ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        EJB3RemoteServiceAdd.INSTANCE.installRuntimeServices(context, ejb3RemoteServiceModelNode, verificationHandler);
+        resourceRegistration.registerReadWriteAttribute(CHANNEL_CREATION_OPTION_VALUE, null, new ChannelCreationOptionWriteAttributeHandler(CHANNEL_CREATION_OPTION_VALUE, parentResourceAddHandler));
+        resourceRegistration.registerReadWriteAttribute(CHANNEL_CREATION_OPTION_TYPE, null, new ChannelCreationOptionWriteAttributeHandler(CHANNEL_CREATION_OPTION_TYPE, parentResourceAddHandler));
     }
 
     /**
@@ -96,19 +96,22 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
      */
     private static class ChannelCreationOptionWriteAttributeHandler extends RestartParentWriteAttributeHandler {
 
-        public ChannelCreationOptionWriteAttributeHandler(final AttributeDefinition attributeDefinition) {
+        private final EJB3RemoteConnectorAdd parentResourceAddHandler;
+
+        private ChannelCreationOptionWriteAttributeHandler(final AttributeDefinition attributeDefinition, final EJB3RemoteConnectorAdd parentResourceAddHandler) {
             super(EJB3SubsystemModel.REMOTE, attributeDefinition);
+            this.parentResourceAddHandler = parentResourceAddHandler;
         }
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
                                              ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            ChannelCreationOptionResource.recreateParentService(context, parentModel, verificationHandler);
+            this.parentResourceAddHandler.installRuntimeServices(context, parentAddress, parentModel, verificationHandler);
         }
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return EJBRemoteConnectorService.SERVICE_NAME;
+            return this.parentResourceAddHandler.getEJB3RemoteConnectorServiceName(parentAddress);
         }
     }
 
@@ -117,8 +120,11 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
      */
     private static class ChannelCreationOptionAdd extends RestartParentResourceAddHandler {
 
-        private ChannelCreationOptionAdd() {
+        private final EJB3RemoteConnectorAdd parentResourceAddHandler;
+
+        private ChannelCreationOptionAdd(final EJB3RemoteConnectorAdd parentResourceAddHandler) {
             super(EJB3SubsystemModel.REMOTE);
+            this.parentResourceAddHandler = parentResourceAddHandler;
         }
 
         protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
@@ -129,12 +135,12 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode parentModel,
                                              ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            ChannelCreationOptionResource.recreateParentService(context, parentModel, verificationHandler);
+            this.parentResourceAddHandler.installRuntimeServices(context, parentAddress, parentModel, verificationHandler);
         }
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return EJBRemoteConnectorService.SERVICE_NAME;
+            return this.parentResourceAddHandler.getEJB3RemoteConnectorServiceName(parentAddress);
         }
     }
 
@@ -142,19 +148,23 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
      * Remove handler for channel creation option
      */
     private static class ChannelCreationOptionRemove extends RestartParentResourceRemoveHandler {
-        private ChannelCreationOptionRemove() {
+
+        private final EJB3RemoteConnectorAdd parentResourceAddHandler;
+
+        private ChannelCreationOptionRemove(final EJB3RemoteConnectorAdd parentResourceAddHandler) {
             super(EJB3SubsystemModel.REMOTE);
+            this.parentResourceAddHandler = parentResourceAddHandler;
         }
 
         @Override
         protected void recreateParentService(OperationContext context, PathAddress parentAddress, ModelNode ejb3RemoteServiceModelNode,
                                              ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-            ChannelCreationOptionResource.recreateParentService(context, ejb3RemoteServiceModelNode, verificationHandler);
+            this.parentResourceAddHandler.installRuntimeServices(context, parentAddress, ejb3RemoteServiceModelNode, verificationHandler);
         }
 
         @Override
         protected ServiceName getParentServiceName(PathAddress parentAddress) {
-            return EJBRemoteConnectorService.SERVICE_NAME;
+            return this.parentResourceAddHandler.getEJB3RemoteConnectorServiceName(parentAddress);
         }
     }
 
@@ -187,7 +197,7 @@ class ChannelCreationOptionResource extends SimpleResourceDefinition {
     }
 
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder parent) {
-        parent.addChildResource(INSTANCE.getPathElement())
+        parent.addChildResource(PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS))
             .getAttributeBuilder()
                 .addRejectCheck(RejectAttributeChecker.SIMPLE_EXPRESSIONS, CHANNEL_CREATION_OPTION_VALUE);
     }

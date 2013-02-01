@@ -657,7 +657,8 @@ public abstract class EJBComponentDescription extends ComponentDescription {
                 configuration.getDependencies().add(new DependencyConfigurator<ViewService>() {
                     @Override
                     public void configureDependency(final ServiceBuilder<?> serviceBuilder, final ViewService service) throws DeploymentUnitProcessingException {
-                        serviceBuilder.addDependency(EJBRemoteConnectorService.SERVICE_NAME);
+                        final String ejbRemotingConnectorName = EJBRemoteConnectorService.getDefaultEJBRemotingConnectorName();
+                        serviceBuilder.addDependency(EJBRemoteConnectorService.serviceNameFor(ejbRemotingConnectorName));
                     }
                 });
             }

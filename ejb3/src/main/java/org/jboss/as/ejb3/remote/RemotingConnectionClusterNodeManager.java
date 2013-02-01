@@ -75,6 +75,7 @@ class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
         final ReconnectHandler reconnectHandler;
         OptionMap channelCreationOptions = OptionMap.EMPTY;
         final EJBClientConfiguration ejbClientConfiguration = this.clusterContext.getEJBClientContext().getEJBClientConfiguration();
+        String ejbChannelName = null;
         try {
             // if the client configuration is available create the connection using those configs
             if (ejbClientConfiguration != null) {
@@ -86,8 +87,9 @@ class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
                     final IoFuture<Connection> futureConnection = NetworkUtil.connect(endpoint, destinationHost, destinationPort, null, connectionCreationOptions, callbackHandler, null);
                     // wait for the connection to be established
                     connection = IoFutureHelper.get(futureConnection, 5000, TimeUnit.MILLISECONDS);
+                    ejbChannelName = ejbClientConfiguration.getEJBRemotingChannelName();
                     // create a re-connect handler (which will be used on connection breaking down)
-                    reconnectHandler = new ClusterNodeReconnectHandler(destinationHost, destinationPort, connectionCreationOptions, callbackHandler, channelCreationOptions, 5000);
+                    reconnectHandler = new ClusterNodeReconnectHandler(destinationHost, destinationPort, ejbChannelName, connectionCreationOptions, callbackHandler, channelCreationOptions, 5000);
 
                 } else {
                     final EJBClientConfiguration.ClusterNodeConfiguration clusterNodeConfiguration = clusterConfiguration.getNodeConfiguration(this.getNodeName());
@@ -99,8 +101,9 @@ class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
                     final long timeout = clusterNodeConfiguration == null ? clusterConfiguration.getConnectionTimeout() : clusterNodeConfiguration.getConnectionTimeout();
                     // wait for the connection to be established
                     connection = IoFutureHelper.get(futureConnection, timeout, TimeUnit.MILLISECONDS);
+                    ejbChannelName = clusterNodeConfiguration.getEJBRemotingChannelName() == null ? clusterConfiguration.getEJBRemotingChannelName() : clusterNodeConfiguration.getEJBRemotingChannelName();
                     // create a re-connect handler (which will be used on connection breaking down)
-                    reconnectHandler = new ClusterNodeReconnectHandler(destinationHost, destinationPort, connectionCreationOptions, callbackHandler, channelCreationOptions, timeout);
+                    reconnectHandler = new ClusterNodeReconnectHandler(destinationHost, destinationPort, ejbChannelName, connectionCreationOptions, callbackHandler, channelCreationOptions, timeout);
                 }
 
             } else {
@@ -111,14 +114,14 @@ class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
                 // wait for the connection to be established
                 connection = IoFutureHelper.get(futureConnection, 5000, TimeUnit.MILLISECONDS);
                 // create a re-connect handler (which will be used on connection breaking down)
-                reconnectHandler = new ClusterNodeReconnectHandler(destinationHost, destinationPort, connectionCreationOptions, callbackHandler, channelCreationOptions, 5000);
+                reconnectHandler = new ClusterNodeReconnectHandler(destinationHost, destinationPort, null, connectionCreationOptions, callbackHandler, channelCreationOptions, 5000);
 
             }
         } catch (Exception e) {
             logger.info("Could not create a connection for cluster node " + this.nodeName + " in cluster " + clusterContext.getClusterName(), e);
             return null;
         }
-        return new RemotingConnectionEJBReceiver(connection, reconnectHandler, channelCreationOptions);
+        return new RemotingConnectionEJBReceiver(connection, reconnectHandler, channelCreationOptions, ejbChannelName);
     }
 
 
@@ -130,14 +133,16 @@ class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
         private final OptionMap channelCreationOptions;
         private final CallbackHandler callbackHandler;
         private final long connectionTimeout;
+        private final String ejbChannelName;
 
-        ClusterNodeReconnectHandler(final String host, final int port, final OptionMap connectionCreationOptions, final CallbackHandler callbackHandler, final OptionMap channelCreationOptions, final long connectionTimeoutInMillis) {
+        ClusterNodeReconnectHandler(final String host, final int port, final String ejbChannelName, final OptionMap connectionCreationOptions, final CallbackHandler callbackHandler, final OptionMap channelCreationOptions, final long connectionTimeoutInMillis) {
             this.destinationHost = host;
             this.destinationPort = port;
             this.connectionCreationOptions = connectionCreationOptions;
             this.channelCreationOptions = channelCreationOptions;
             this.callbackHandler = callbackHandler;
             this.connectionTimeout = connectionTimeoutInMillis;
+            this.ejbChannelName = ejbChannelName;
         }
 
         @Override
@@ -155,7 +160,7 @@ class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
                 return;
             }
             try {
-                final EJBReceiver ejbReceiver = new RemotingConnectionEJBReceiver(connection, this, channelCreationOptions);
+                final EJBReceiver ejbReceiver = new RemotingConnectionEJBReceiver(connection, this, channelCreationOptions, this.ejbChannelName);
                 RemotingConnectionClusterNodeManager.this.clusterContext.registerEJBReceiver(ejbReceiver);
             } finally {
                 // if we successfully re-connected then unregister this ReconnectHandler from the EJBClientContext

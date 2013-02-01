@@ -39,6 +39,7 @@ public interface EJB3SubsystemModel {
     String ASYNC = "async";
     String IIOP = "iiop";
 
+    String CONNECTORS = "connectors";
     String CONNECTOR_REF = "connector-ref";
     String IN_VM_REMOTE_INTERFACE_INVOCATION_PASS_BY_VALUE = "in-vm-remote-interface-invocation-pass-by-value";
 
@@ -55,6 +56,7 @@ public interface EJB3SubsystemModel {
     String DEFAULT_ENTITY_BEAN_OPTIMISTIC_LOCKING = "default-entity-bean-optimistic-locking";
 
     String ENABLE_STATISTICS = "enable-statistics";
+    String EJB_CHANNEL_NAME = "ejb-channel-name";
 
     String MAX_POOL_SIZE = "max-pool-size";
     String STRICT_MAX_BEAN_INSTANCE_POOL = "strict-max-bean-instance-pool";
@@ -98,6 +100,9 @@ public interface EJB3SubsystemModel {
     String CHANNEL_CREATION_OPTIONS = "channel-creation-options";
     String VALUE = "value";
     String TYPE = "type";
+
+    PathElement CONNECTORS_PATH = PathElement.pathElement(SERVICE, CONNECTORS);
+    PathElement REMOTE_CONNECTOR_PATH = PathElement.pathElement(REMOTE);
 
     PathElement REMOTE_SERVICE_PATH = PathElement.pathElement(SERVICE, REMOTE);
     PathElement ASYNC_SERVICE_PATH = PathElement.pathElement(SERVICE, ASYNC);

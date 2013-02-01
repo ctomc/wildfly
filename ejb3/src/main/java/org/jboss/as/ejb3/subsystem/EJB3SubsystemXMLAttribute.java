@@ -43,6 +43,7 @@ public enum EJB3SubsystemXMLAttribute {
 
     DEFAULT_ACCESS_TIMEOUT("default-access-timeout"),
 
+    EJB_CHANNEL_NAME("ejb-channel-name"),
     ENABLED("enabled"),
     ENABLE_BY_DEFAULT("enable-by-default"),
 

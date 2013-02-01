@@ -143,7 +143,7 @@ public class Ejb3SubsystemUnitTestCase extends AbstractSubsystemBaseTest {
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(ClusterPassivationStoreResourceDefinition.IDLE_TIMEOUT_UNIT))
                 .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.TIMER_SERVICE_PATH),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(TimerServiceResourceDefinition.PATH))
-                .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH, ChannelCreationOptionResource.INSTANCE.getPathElement()),
+                .addFailedAttribute(subsystemAddress.append(EJB3SubsystemModel.REMOTE_SERVICE_PATH, PathElement.pathElement(EJB3SubsystemModel.CHANNEL_CREATION_OPTIONS)),
                         new FailedOperationTransformationConfig.RejectExpressionsConfig(ChannelCreationOptionResource.CHANNEL_CREATION_OPTION_VALUE));
     }
 

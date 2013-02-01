@@ -90,4 +90,9 @@ public abstract class ForwardingEjbClientConfiguration implements EJBClientConfi
     public DeploymentNodeSelector getDeploymentNodeSelector() {
         return delegate.getDeploymentNodeSelector();
     }
+
+    @Override
+    public String getEJBRemotingChannelName() {
+        return delegate.getEJBRemotingChannelName();
+    }
 }

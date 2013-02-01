@@ -41,6 +41,7 @@ public class EJBClientDescriptorMetaData {
     private Boolean localReceiverPassByValue;
     private long invocationTimeout;
     private String deploymentNodeSelector;
+    private String ejbChannelName;
 
     private Map<String, RemotingReceiverConfiguration> remotingReceiverConfigurations = new HashMap<String, RemotingReceiverConfiguration>();
     private Set<ClusterConfig> clusterConfigs = new HashSet<ClusterConfig>();
@@ -128,6 +129,14 @@ public class EJBClientDescriptorMetaData {
         this.invocationTimeout = invocationTimeout;
     }
 
+    public void setEjbChannelName(final String channelName) {
+        this.ejbChannelName = channelName;
+    }
+
+    public String getEjbChannelName() {
+        return this.ejbChannelName;
+    }
+
     public String getDeploymentNodeSelector() {
         return this.deploymentNodeSelector;
     }
@@ -142,6 +151,7 @@ public class EJBClientDescriptorMetaData {
         private final Set<ClusterNodeConfig> nodes = new HashSet<ClusterNodeConfig>();
         private long maxAllowedConnectedNodes;
         private String nodeSelector;
+        private String ejbChannelName;
 
 
         ClusterConfig(final String clusterName) {
@@ -160,6 +170,14 @@ public class EJBClientDescriptorMetaData {
 
         public String getClusterName() {
             return this.clusterName;
+        }
+
+        public String getEjbChannelName() {
+            return this.ejbChannelName;
+        }
+
+        public void setEjbChannelName(final String channelName) {
+            this.ejbChannelName = channelName;
         }
 
         public long getMaxAllowedConnectedNodes() {
@@ -232,6 +250,7 @@ public class EJBClientDescriptorMetaData {
         private long connectTimeout;
         private String userName;
         private String securityRealm;
+        private String ejbChannelName;
 
         public void setConnectionOptions(final Properties connectionOptions) {
             this.connectionOptions = connectionOptions;
@@ -248,6 +267,15 @@ public class EJBClientDescriptorMetaData {
         public void setConnectTimeout(final long timeout) {
             this.connectTimeout = timeout;
         }
+
+        public String getEjbChannelName() {
+            return this.ejbChannelName;
+        }
+
+        public void setEjbChannelName(final String channelName) {
+            this.ejbChannelName = channelName;
+        }
+
 
         public Properties getConnectionOptions() {
             return this.connectionOptions;
@@ -276,6 +304,7 @@ public class EJBClientDescriptorMetaData {
 
     public class RemotingReceiverConfiguration {
         private final String outboundConnectionRef;
+        private String ejbChannelName;
 
         private Properties channelCreationOptions;
         private long connectionTimeout;
@@ -297,6 +326,14 @@ public class EJBClientDescriptorMetaData {
             return this.channelCreationOptions;
         }
 
+        public void setEjbChannelName(final String ejbChannelName) {
+            this.ejbChannelName = ejbChannelName;
+        }
+
+        public String getEjbChannelName() {
+            return this.ejbChannelName;
+        }
+
         public void setConnectionTimeout(final long timeout) {
             this.connectionTimeout = timeout;
         }
@@ -316,15 +353,18 @@ public class EJBClientDescriptorMetaData {
 
             RemotingReceiverConfiguration that = (RemotingReceiverConfiguration) o;
 
-            if (outboundConnectionRef != null ? !outboundConnectionRef.equals(that.outboundConnectionRef) : that.outboundConnectionRef != null)
+            if (ejbChannelName != null ? !ejbChannelName.equals(that.ejbChannelName) : that.ejbChannelName != null)
                 return false;
+            if (!outboundConnectionRef.equals(that.outboundConnectionRef)) return false;
 
             return true;
         }
 
         @Override
         public int hashCode() {
-            return outboundConnectionRef != null ? outboundConnectionRef.hashCode() : 0;
+            int result = outboundConnectionRef.hashCode();
+            result = 31 * result + (ejbChannelName != null ? ejbChannelName.hashCode() : 0);
+            return result;
         }
     }
 }

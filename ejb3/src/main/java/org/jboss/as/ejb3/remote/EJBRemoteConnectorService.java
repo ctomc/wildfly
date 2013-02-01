@@ -71,10 +71,35 @@ import java.util.concurrent.ExecutorService;
  */
 public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorService> {
 
-    // TODO: Should this be exposed via the management APIs?
-    private static final String EJB_CHANNEL_NAME = "jboss.ejb";
+    public static final String DEFAULT_EJB_CHANNEL_NAME = "jboss.ejb";
 
+    /**
+     * @deprecated Use {@link #serviceNameFor(String)} instead
+     */
+    @Deprecated
     public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connector");
+
+    private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb3", "connectors", "remote");
+
+    /**
+     * Returns a {@link ServiceName} for the passed connector name.
+     *
+     * @param connectorName
+     * @return
+     */
+    public static ServiceName serviceNameFor(final String connectorName) {
+        return BASE_SERVICE_NAME.append(connectorName);
+    }
+
+    /**
+     * Returns the name of the EJB remoting connector which will be used as the default EJB remoting connector
+     * for EJB invocations
+     *
+     * @return
+     */
+    public static String getDefaultEJBRemotingConnectorName() {
+        return "default";
+    }
 
     private final InjectedValue<Endpoint> endpointValue = new InjectedValue<Endpoint>();
     private final InjectedValue<ExecutorService> executorService = new InjectedValue<ExecutorService>();
@@ -91,17 +116,19 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
     private final byte serverProtocolVersion;
     private final String[] supportedMarshallingStrategies;
     private final OptionMap channelCreationOptions;
+    private final String ejbChannelName;
 
     public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies, final ServiceName remotingConnectorServiceName) {
-        this(serverProtocolVersion, supportedMarshallingStrategies, remotingConnectorServiceName, OptionMap.EMPTY);
+        this(serverProtocolVersion, supportedMarshallingStrategies, remotingConnectorServiceName, OptionMap.EMPTY, DEFAULT_EJB_CHANNEL_NAME);
     }
 
     public EJBRemoteConnectorService(final byte serverProtocolVersion, final String[] supportedMarshallingStrategies, final ServiceName remotingConnectorServiceName,
-                                     final OptionMap channelCreationOptions) {
+                                     final OptionMap channelCreationOptions, final String ejbChannelName) {
         this.serverProtocolVersion = serverProtocolVersion;
         this.supportedMarshallingStrategies = supportedMarshallingStrategies;
         this.remotingConnectorServiceName = remotingConnectorServiceName;
         this.channelCreationOptions = channelCreationOptions;
+        this.ejbChannelName = ejbChannelName;
     }
 
     @Override
@@ -118,7 +145,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         // Register a EJB channel open listener
         final OpenListener channelOpenListener = new ChannelOpenListener(serviceContainer);
         try {
-            registration = endpointValue.getValue().registerService(EJB_CHANNEL_NAME, channelOpenListener, this.channelCreationOptions);
+            registration = endpointValue.getValue().registerService(ejbChannelName, channelOpenListener, this.channelCreationOptions);
         } catch (ServiceRegistrationException e) {
             throw new StartException(e);
         }
@@ -197,7 +224,7 @@ public class EJBRemoteConnectorService implements Service<EJBRemoteConnectorServ
         public void channelOpened(Channel channel) {
             final ChannelAssociation channelAssociation = new ChannelAssociation(channel);
 
-            EjbLogger.ROOT_LOGGER.tracef("Welcome %s to the " + EJB_CHANNEL_NAME + " channel", channel);
+            EjbLogger.ROOT_LOGGER.tracef("Welcome %s to the " + DEFAULT_EJB_CHANNEL_NAME + " channel", channel);
             channel.addCloseHandler(new CloseHandler<Channel>() {
                 @Override
                 public void handleClose(Channel closed, IOException exception) {

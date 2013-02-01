@@ -50,7 +50,7 @@
             <xs:element name="passivation-stores" type="passivation-storesType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="async" type="asyncType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="timer-service" type="timerServiceType" minOccurs="0" maxOccurs="1"/>
-            <xs:element name="remote" type="remoteType" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="connectors" type="connectorsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="thread-pools" type="threadPoolsType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="iiop" type="iiopType" minOccurs="0" maxOccurs="1"/>
             <xs:element name="in-vm-remote-interface-invocation" type="in-vm-remote-interface-invocationType"
@@ -79,13 +79,29 @@
         <xs:attribute name="enabled" type="xs:boolean" use="required"/>
     </xs:complexType>
 
+    <xs:complexType name="connectorsType">
+        <xs:sequence>
+            <xs:element name="remote" type="remoteType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
     <xs:complexType name="remoteType">
         <xs:all>
             <xs:element name="channel-creation-options" type="channel-creation-optionsType" minOccurs="0"
                         maxOccurs="1"/>
         </xs:all>
+        <xs:attribute name="name" type="xs:string" use="required"/>
         <xs:attribute name="connector-ref" type="xs:string" use="required"/>
         <xs:attribute name="thread-pool-name" type="xs:token" use="required"/>
+        <xs:attribute name="ejb-channel-name" type="xs:token" use="optional" default="jboss.ejb">
+            <xs:annotation>
+                <xs:documentation>
+                    <![CDATA[
+                    The name of the EJB remoting channel which will be created to handle EJB remote invocations
+                ]]>
+                </xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
 
     <xs:complexType name="asyncType">

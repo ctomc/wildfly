@@ -54,18 +54,18 @@ import static javax.xml.stream.XMLStreamConstants.START_DOCUMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 /**
- * Parser for urn:jboss:ejb-client:1.2:jboss-ejb-client
+ * Parser for urn:jboss:ejb-client:1.3:jboss-ejb-client
  *
  * @author Jaikiran Pai
  */
-class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescriptorMetaData> {
+class EJBClientDescriptor13Parser implements XMLElementReader<EJBClientDescriptorMetaData> {
 
-    public static final String NAMESPACE_1_2 = "urn:jboss:ejb-client:1.2";
+    public static final String NAMESPACE_1_3 = "urn:jboss:ejb-client:1.3";
 
-    public static final EJBClientDescriptor12Parser INSTANCE = new EJBClientDescriptor12Parser();
+    public static final EJBClientDescriptor13Parser INSTANCE = new EJBClientDescriptor13Parser();
 
 
-    EJBClientDescriptor12Parser() {
+    EJBClientDescriptor13Parser() {
     }
 
 
@@ -87,23 +87,23 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
 
         static {
             Map<QName, Element> elementsMap = new HashMap<QName, Element>();
-            elementsMap.put(new QName(NAMESPACE_1_2, "jboss-ejb-client"), Element.JBOSS_EJB_CLIENT);
-            elementsMap.put(new QName(NAMESPACE_1_2, "client-context"), Element.CLIENT_CONTEXT);
-            elementsMap.put(new QName(NAMESPACE_1_2, "ejb-receivers"), Element.EJB_RECEIVERS);
-            elementsMap.put(new QName(NAMESPACE_1_2, "remoting-ejb-receiver"), Element.REMOTING_EJB_RECEIVER);
-            elementsMap.put(new QName(NAMESPACE_1_2, "clusters"), Element.CLUSTERS);
-            elementsMap.put(new QName(NAMESPACE_1_2, "cluster"), Element.CLUSTER);
-            elementsMap.put(new QName(NAMESPACE_1_2, "node"), Element.NODE);
-            elementsMap.put(new QName(NAMESPACE_1_2, "channel-creation-options"), Element.CHANNEL_CREATION_OPTIONS);
-            elementsMap.put(new QName(NAMESPACE_1_2, "connection-creation-options"), Element.CONNECTION_CREATION_OPTIONS);
-            elementsMap.put(new QName(NAMESPACE_1_2, "property"), Element.PROPERTY);
+            elementsMap.put(new QName(NAMESPACE_1_3, "jboss-ejb-client"), Element.JBOSS_EJB_CLIENT);
+            elementsMap.put(new QName(NAMESPACE_1_3, "client-context"), Element.CLIENT_CONTEXT);
+            elementsMap.put(new QName(NAMESPACE_1_3, "ejb-receivers"), Element.EJB_RECEIVERS);
+            elementsMap.put(new QName(NAMESPACE_1_3, "remoting-ejb-receiver"), Element.REMOTING_EJB_RECEIVER);
+            elementsMap.put(new QName(NAMESPACE_1_3, "clusters"), Element.CLUSTERS);
+            elementsMap.put(new QName(NAMESPACE_1_3, "cluster"), Element.CLUSTER);
+            elementsMap.put(new QName(NAMESPACE_1_3, "node"), Element.NODE);
+            elementsMap.put(new QName(NAMESPACE_1_3, "channel-creation-options"), Element.CHANNEL_CREATION_OPTIONS);
+            elementsMap.put(new QName(NAMESPACE_1_3, "connection-creation-options"), Element.CONNECTION_CREATION_OPTIONS);
+            elementsMap.put(new QName(NAMESPACE_1_3, "property"), Element.PROPERTY);
             elements = elementsMap;
         }
 
         static Element of(QName qName) {
             QName name;
             if (qName.getNamespaceURI().equals("")) {
-                name = new QName(NAMESPACE_1_2, qName.getLocalPart());
+                name = new QName(NAMESPACE_1_3, qName.getLocalPart());
             } else {
                 name = qName;
             }
@@ -125,6 +125,7 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
         SECURITY_REALM,
         INVOCATION_TIMEOUT,
         DEPLOYMENT_NODE_SELECTOR,
+        EJB_CHANNEL_NAME,
         // default unknown attribute
         UNKNOWN;
 
@@ -144,6 +145,7 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
             attributesMap.put(new QName("security-realm"), SECURITY_REALM);
             attributesMap.put(new QName("invocation-timeout"), INVOCATION_TIMEOUT);
             attributesMap.put(new QName("deployment-node-selector"), DEPLOYMENT_NODE_SELECTOR);
+            attributesMap.put(new QName("ejb-channel-name"), EJB_CHANNEL_NAME);
             attributes = attributesMap;
         }
 
@@ -192,6 +194,9 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
                     break;
                 case DEPLOYMENT_NODE_SELECTOR:
                     ejbClientDescriptorMetaData.setDeploymentNodeSelector(val.trim());
+                    break;
+                case EJB_CHANNEL_NAME:
+                    ejbClientDescriptorMetaData.setEjbChannelName(val);
                     break;
                 default:
                     unexpectedContent(reader);
@@ -283,6 +288,7 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
         final int count = reader.getAttributeCount();
         EJBClientDescriptorMetaData.RemotingReceiverConfiguration remotingReceiverConfiguration = null;
         long connectTimeout = 5000;
+        String ejbChannelName = null;
         for (int i = 0; i < count; i++) {
             final Attribute attribute = Attribute.of(reader.getAttributeName(i));
             required.remove(attribute);
@@ -294,6 +300,9 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
                 case CONNECT_TIMEOUT:
                     connectTimeout = reader.getLongAttributeValue(i);
                     break;
+                case EJB_CHANNEL_NAME:
+                    ejbChannelName = reader.getAttributeValue(i).trim();
+                    break;
                 default:
                     unexpectedContent(reader);
             }
@@ -301,6 +310,8 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
         if (!required.isEmpty()) {
             missingAttributes(reader.getLocation(), required);
         }
+        // set ejb channel name
+        remotingReceiverConfiguration.setEjbChannelName(ejbChannelName);
         // set the timeout
         remotingReceiverConfiguration.setConnectionTimeout(connectTimeout);
 
@@ -363,6 +374,7 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
         long maxAllowedConnectedNodes = 10;
         String userName = null;
         String securityRealm = null;
+        String ejbChannelName = null;
         for (int i = 0; i < count; i++) {
             final Attribute attribute = Attribute.of(reader.getAttributeName(i));
             required.remove(attribute);
@@ -385,6 +397,9 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
                 case SECURITY_REALM:
                     securityRealm = reader.getAttributeValue(i).trim();
                     break;
+                case EJB_CHANNEL_NAME:
+                    ejbChannelName = reader.getAttributeValue(i).trim();
+                    break;
                 default:
                     unexpectedContent(reader);
             }
@@ -399,6 +414,7 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
         clusterConfig.setMaxAllowedConnectedNodes(maxAllowedConnectedNodes);
         clusterConfig.setSecurityRealm(securityRealm);
         clusterConfig.setUserName(userName);
+        clusterConfig.setEjbChannelName(ejbChannelName);
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {
@@ -495,6 +511,7 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
         long connectTimeout = 5000;
         String userName = null;
         String securityRealm = null;
+        String ejbChannelName = null;
         for (int i = 0; i < count; i++) {
             final Attribute attribute = Attribute.of(reader.getAttributeName(i));
             required.remove(attribute);
@@ -511,6 +528,9 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
                 case SECURITY_REALM:
                     securityRealm = reader.getAttributeValue(i).trim();
                     break;
+                case EJB_CHANNEL_NAME:
+                    ejbChannelName = reader.getAttributeValue(i).trim();
+                    break;
                 default:
                     unexpectedContent(reader);
             }
@@ -523,6 +543,8 @@ class EJBClientDescriptor12Parser implements XMLElementReader<EJBClientDescripto
         clusterNodeConfig.setConnectTimeout(connectTimeout);
         clusterNodeConfig.setSecurityRealm(securityRealm);
         clusterNodeConfig.setUserName(userName);
+        clusterNodeConfig.setEjbChannelName(ejbChannelName);
+
 
         while (reader.hasNext()) {
             switch (reader.nextTag()) {

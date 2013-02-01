@@ -169,6 +169,11 @@ public class DefaultEjbClientContextService implements Service<EJBClientContext>
         }
 
         @Override
+        public String getEJBRemotingChannelName() {
+            return null;
+        }
+
+        @Override
         public OptionMap getEndpointCreationOptions() {
             // This client configuration will *not* be used to create endpoints
             return OptionMap.EMPTY;

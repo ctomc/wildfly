@@ -187,7 +187,11 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
     public void registerChildren(ManagementResourceRegistration subsystemRegistration) {
 
         // subsystem=ejb3/service=remote
-        subsystemRegistration.registerSubModel(EJB3RemoteResourceDefinition.INSTANCE);
+        // Deprecated: Use /subsystem=ejb3/service=connectors/remote=<name>
+        subsystemRegistration.registerSubModel(new EJB3RemoteResourceDefinition());
+
+        // register /subsystem=ejb3/service=connectors
+        subsystemRegistration.registerSubModel(new EJB3ConnectorsResourceDefinition());
 
         // subsystem=ejb3/service=async
         subsystemRegistration.registerSubModel(EJB3AsyncResourceDefinition.INSTANCE);
@@ -236,6 +240,7 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
                     }, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
                     .setDiscard(DiscardAttributeChecker.UNDEFINED, EJB3SubsystemRootResourceDefinition.DEFAULT_SECURITY_DOMAIN)
                     .end();
+        registerRejectServiceConnectorsResourceTransformer_1_1_0(builder);
         EJB3RemoteResourceDefinition.registerTransformers_1_1_0(builder);
         UnboundedQueueThreadPoolResourceDefinition.registerTransformers1_0(builder, EJB3SubsystemModel.THREAD_POOL);
         StrictMaxPoolResourceDefinition.registerTransformers_1_1_0(builder);
@@ -243,6 +248,12 @@ public class EJB3SubsystemRootResourceDefinition extends SimpleResourceDefinitio
         ClusterPassivationStoreResourceDefinition.registerTransformers_1_1_0(builder);
         TimerServiceResourceDefinition.registerTransformers_1_1_0(builder);
         TransformationDescription.Tools.register(builder.build(), subsystemRegistration, subsystem110);
+    }
+
+    private static void registerRejectServiceConnectorsResourceTransformer_1_1_0(final ResourceTransformationDescriptionBuilder transformationDescriptionBuilder) {
+        // for 1.1.0 version of the model, we do not support /subsystem=ejb3/service=connectors resource, so add a
+        // transformer which discards it
+        transformationDescriptionBuilder.discardChildResource(EJB3SubsystemModel.CONNECTORS_PATH);
     }
 
     private static class EJB3ThreadFactoryResolver extends ThreadFactoryResolver.SimpleResolver {

@@ -39,6 +39,8 @@ public enum EJB3SubsystemXMLElement {
     BEAN_INSTANCE_POOLS("bean-instance-pools"),
     BEAN_INSTANCE_POOL_REF("bean-instance-pool-ref"),
 
+    CONNECTORS("connectors"),
+
     ENTITY_BEAN("entity-bean"),
 
     DATA_STORE("data-store"),

@@ -173,7 +173,8 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
                 context.registerReconnectHandler(reconnectHandler);
                 continue;
             }
-            final RemotingConnectionEJBReceiver ejbReceiver = new RemotingConnectionEJBReceiver(connection, reconnectHandler, options);
+            final String ejbChannelName = this.ejbClientConfiguration != null ? this.ejbClientConfiguration.getEJBRemotingChannelName() : null;
+            final RemotingConnectionEJBReceiver ejbReceiver = new RemotingConnectionEJBReceiver(connection, reconnectHandler, options, ejbChannelName);
             context.registerEJBReceiver(ejbReceiver);
             numRemotingReceivers++;
         }
@@ -220,8 +221,9 @@ public class DescriptorBasedEJBClientContextService implements Service<EJBClient
                 logger.debug("Successful reconnect attempt#" + this.reconnectAttemptCount + " to outbound connection " + this.outboundConnectionServiceName);
                 // successfully reconnected so unregister this reconnect handler
                 this.clientContext.unregisterReconnectHandler(this);
+                final String ejbChannelName = this.clientContext.getEJBClientConfiguration() != null ? this.clientContext.getEJBClientConfiguration().getEJBRemotingChannelName() : null;
                 // register the newly reconnected connection
-                final EJBReceiver receiver = new RemotingConnectionEJBReceiver(connection, this, channelCreationOpts);
+                final EJBReceiver receiver = new RemotingConnectionEJBReceiver(connection, this, channelCreationOpts, ejbChannelName);
                 this.clientContext.registerEJBReceiver(receiver);
             } catch (Exception e) {
                 logger.debug("Reconnect attempt#" + this.reconnectAttemptCount + " failed for outbound connection " + this.outboundConnectionServiceName, e);

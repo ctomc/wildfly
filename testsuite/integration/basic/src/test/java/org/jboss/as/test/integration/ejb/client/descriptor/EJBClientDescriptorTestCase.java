@@ -70,6 +70,7 @@ public class EJBClientDescriptorTestCase {
     private static final String MODULE_NAME_TWO = "ejb-client-descriptor-with-no-receiver-test";
     private static final String MODULE_NAME_THREE = "ejb-client-descriptor-with-local-and-remote-receivers-test";
     private static final String JBOSS_EJB_CLIENT_1_2_MODULE_NAME = "ejb-client-descriptor-test-with-jboss-ejb-client_1_2_xml";
+    private static final String JBOSS_EJB_CLIENT_1_3_MODULE_NAME = "ejb-client-descriptor-test-with-jboss-ejb-client_1_3_xml";
 
 
     private static final String outboundSocketName = "ejb-client-descriptor-test-outbound-socket";
@@ -120,6 +121,15 @@ public class EJBClientDescriptorTestCase {
         final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JBOSS_EJB_CLIENT_1_2_MODULE_NAME + ".jar");
         jar.addPackage(EchoBean.class.getPackage());
         jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_1_2.xml", "jboss-ejb-client.xml");
+        return jar;
+    }
+
+    @Deployment(name = "jboss-ejb-client_1_3_version", testable = false, managed = false)
+    public static JavaArchive createJBossEJBClient13VersionDeployment() throws Exception {
+
+        final JavaArchive jar = ShrinkWrap.create(JavaArchive.class, JBOSS_EJB_CLIENT_1_3_MODULE_NAME + ".jar");
+        jar.addPackage(EchoBean.class.getPackage());
+        jar.addAsManifestResource(EJBClientDescriptorTestCase.class.getPackage(), "jboss-ejb-client_1_3.xml", "jboss-ejb-client.xml");
         return jar;
     }
 
@@ -243,6 +253,29 @@ public class EJBClientDescriptorTestCase {
 
         } finally {
             deployer.undeploy("jboss-ejb-client_1_2_version");
+        }
+    }
+
+    /**
+     * Tests that a deployment using jboss-ejb-client.xml of version 1.3, containing the <code>ejb-channel-name</code>
+     * attribute, deploys fine.
+     *
+     * @throws Exception
+     */
+    @Test
+    @OperateOnDeployment("jboss-ejb-client_1_3_version")
+    public void testEJBChannelName() throws Exception {
+        deployer.deploy("jboss-ejb-client_1_3_version");
+        try {
+            final RemoteEcho remoteEcho = (RemoteEcho) context.lookup("ejb:" + APP_NAME + "/" + JBOSS_EJB_CLIENT_1_3_MODULE_NAME + "/" + DISTINCT_NAME
+                    + "/" + EchoBean.class.getSimpleName() + "!" + RemoteEcho.class.getName());
+            Assert.assertNotNull("Lookup returned a null bean proxy", remoteEcho);
+            final String msg = "foo";
+            final String echo = remoteEcho.echo(JBOSS_EJB_CLIENT_1_3_MODULE_NAME, msg);
+            Assert.assertEquals("Unexpected echo", msg, echo);
+
+        } finally {
+            deployer.undeploy("jboss-ejb-client_1_3_version");
         }
     }
 

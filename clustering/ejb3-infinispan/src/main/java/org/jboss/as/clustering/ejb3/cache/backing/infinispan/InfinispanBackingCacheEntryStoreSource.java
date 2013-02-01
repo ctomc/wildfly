@@ -58,6 +58,7 @@ import org.jboss.as.ejb3.cache.spi.SerializationGroup;
 import org.jboss.as.ejb3.cache.spi.SerializationGroupMember;
 import org.jboss.as.ejb3.cache.spi.impl.AbstractBackingCacheEntryStoreSource;
 import org.jboss.as.ejb3.component.stateful.StatefulTimeoutInfo;
+import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
 import org.jboss.as.ejb3.remote.EJBRemotingConnectorClientMappingsEntryProviderService;
 import org.jboss.marshalling.MarshallerFactory;
 import org.jboss.marshalling.Marshalling;
@@ -101,8 +102,9 @@ public class InfinispanBackingCacheEntryStoreSource<K extends Serializable, V ex
 
         InjectedValue<Cache> cache = new InjectedValue<Cache>();
         InjectedValue<Registry.RegistryEntryProvider> provider = new InjectedValue<Registry.RegistryEntryProvider>();
+        final String ejbRemotingConnectorName = EJBRemoteConnectorService.getDefaultEJBRemotingConnectorName();
         AsynchronousService.addService(target, ClusteredBackingCacheEntryStoreSourceService.getClientMappingRegistryServiceName(this.cacheContainerName), new RegistryService(cache, provider))
-                .addDependency(EJBRemotingConnectorClientMappingsEntryProviderService.SERVICE_NAME, Registry.RegistryEntryProvider.class, provider)
+                .addDependency(EJBRemotingConnectorClientMappingsEntryProviderService.serviceNameForEJBRemotingConnector(ejbRemotingConnectorName), Registry.RegistryEntryProvider.class, provider)
                 .addDependency(CacheService.getServiceName(this.cacheContainerName, this.clientMappingsCacheName), Cache.class, cache)
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install()

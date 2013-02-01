@@ -21,10 +21,6 @@
  */
 package org.jboss.as.ejb3.subsystem;
 
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.CONNECTOR_REF;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.THREAD_POOL_NAME;
-import static org.jboss.as.ejb3.subsystem.EJB3SubsystemModel.TYPE;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -34,11 +30,13 @@ import javax.transaction.TransactionSynchronizationRegistry;
 import javax.transaction.UserTransaction;
 
 import org.jboss.as.clustering.registry.RegistryCollector;
+import org.jboss.as.controller.AbstractAddStepHandler;
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.ServiceVerificationHandler;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.ejb3.EjbMessages;
 import org.jboss.as.ejb3.cache.impl.backing.clustering.ClusteredBackingCacheEntryStoreSourceService;
@@ -72,45 +70,72 @@ import org.xnio.Options;
  *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
-    static final EJB3RemoteServiceAdd INSTANCE = new EJB3RemoteServiceAdd();
+public class EJB3RemoteConnectorAdd extends AbstractAddStepHandler {
 
-    private EJB3RemoteServiceAdd() {
+    /**
+     * In a certain (deprecated/old) model, the EJB3 subsystem allowed just one remote-connector being configured and that connector
+     * wasn't expected to have any name. This flag is to identify such cases. If this is true then it represents the case where the
+     * remote connector is unnamed.
+     */
+    private final boolean unnamedRemoteConnector;
+
+    /**
+     *
+     * @param unnamedConnector In a certain (deprecated/old) model, the EJB3 subsystem allowed just one remote-connector being
+     *                         configured and that connector wasn't expected to have any name. This flag is to identify such cases.
+     *                         If this is true then it represents the case where the remote connector is unnamed.
+     * @deprecated Use {@link #EJB3RemoteConnectorAdd()} instead.
+     */
+    @Deprecated
+    EJB3RemoteConnectorAdd(final boolean unnamedConnector) {
+        this.unnamedRemoteConnector = unnamedConnector;
     }
 
-    // TODO why is this a boottime-only handler?
+    /**
+     * This constructor is meant for the new model which expects the remote connector(s) to be named
+     */
+    EJB3RemoteConnectorAdd() {
+        this.unnamedRemoteConnector = false;
+    }
+
     @Override
-    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
-        newControllers.addAll(installRuntimeServices(context, model, verificationHandler));
-        // add ejb remote transactions repository service
-        final EJBRemoteTransactionsRepository transactionsRepository = new EJBRemoteTransactionsRepository();
-        final ServiceTarget serviceTarget = context.getServiceTarget();
-        final ServiceController transactionRepositoryServiceController = serviceTarget.addService(EJBRemoteTransactionsRepository.SERVICE_NAME, transactionsRepository)
-                .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, transactionsRepository.getTransactionManagerInjector())
-                .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class, transactionsRepository.getUserTransactionInjector())
-                .setInitialMode(ServiceController.Mode.ACTIVE)
-                .install();
-        newControllers.add(transactionRepositoryServiceController);
-
-        // Service responsible for tracking cancel() invocations on remote async method calls
-        final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatusService = new RemoteAsyncInvocationCancelStatusService();
-        final ServiceController asyncCancelTrackerServiceController = serviceTarget.addService(RemoteAsyncInvocationCancelStatusService.SERVICE_NAME, asyncInvocationCancelStatusService)
-                .install();
-        newControllers.add(asyncCancelTrackerServiceController);
-
+    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model, ServiceVerificationHandler verificationHandler, List<ServiceController<?>> newControllers) throws OperationFailedException {
+        super.performRuntime(context, operation, model, verificationHandler, newControllers);
+        newControllers.addAll(installRuntimeServices(context, operation, model, verificationHandler));
     }
 
-    Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
-        final String connectorName = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
+    Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final PathAddress pathAddress, final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        final String connectorName;
+        if (this.unnamedRemoteConnector) {
+            connectorName = null;
+        } else {
+            connectorName = pathAddress.getLastElement().getValue();
+        }
+        return installRuntimeServices(context, model, verificationHandler, connectorName);
+    }
+
+    Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
+        final String connectorName;
+        if (this.unnamedRemoteConnector) {
+            connectorName = null;
+        } else {
+            connectorName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
+        }
+        return installRuntimeServices(context, model, verificationHandler, connectorName);
+    }
+
+    Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final ModelNode model, final ServiceVerificationHandler verificationHandler, final String connectorName) throws OperationFailedException {
+        final String remotingConnectorRef = EJB3RemoteResourceDefinition.CONNECTOR_REF.resolveModelAttribute(context, model).asString();
         final String threadPoolName = EJB3RemoteResourceDefinition.THREAD_POOL_NAME.resolveModelAttribute(context, model).asString();
-        final ServiceName remotingServerServiceName = RemotingServices.serverServiceName(connectorName);
+        final String ejbChannelName = EJB3RemoteResourceDefinition.EJB_CHANNEL_NAME.resolveModelAttribute(context, model).asString();
+        final ServiceName remotingServerServiceName = RemotingServices.serverServiceName(remotingConnectorRef);
 
         final List<ServiceController<?>> services = new ArrayList<ServiceController<?>>();
         final ServiceTarget serviceTarget = context.getServiceTarget();
 
         // Install the client-mapping service for the remoting connector
         final EJBRemotingConnectorClientMappingsEntryProviderService clientMappingEntryProviderService = new EJBRemotingConnectorClientMappingsEntryProviderService(remotingServerServiceName);
-        final ServiceBuilder clientMappingEntryProviderServiceBuilder = serviceTarget.addService(EJBRemotingConnectorClientMappingsEntryProviderService.SERVICE_NAME, clientMappingEntryProviderService)
+        final ServiceBuilder clientMappingEntryProviderServiceBuilder = serviceTarget.addService(EJBRemotingConnectorClientMappingsEntryProviderService.serviceNameForEJBRemotingConnector(connectorName), clientMappingEntryProviderService)
                 .addDependency(ServerEnvironmentService.SERVICE_NAME, ServerEnvironment.class, clientMappingEntryProviderService.getServerEnvironmentInjector())
                 .addDependency(remotingServerServiceName);
         if (verificationHandler != null) {
@@ -123,8 +148,15 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
         final OptionMap channelCreationOptions = this.getChannelCreationOptions(context);
         // Install the EJB remoting connector service which will listen for client connections on the remoting channel
         // TODO: Externalize (expose via management API if needed) the version and the marshalling strategy
-        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService((byte) 0x01, new String[]{"river"}, remotingServerServiceName, channelCreationOptions);
-        final ServiceBuilder<EJBRemoteConnectorService> ejbRemoteConnectorServiceBuilder = serviceTarget.addService(EJBRemoteConnectorService.SERVICE_NAME, ejbRemoteConnectorService);
+        final EJBRemoteConnectorService ejbRemoteConnectorService = new EJBRemoteConnectorService((byte) 0x01, new String[]{"river"}, remotingServerServiceName, channelCreationOptions, ejbChannelName);
+        final ServiceName ejbRemoteConnectorServiceName;
+        // for unnamed connector (which was allowed in older versions of the model), we just use a constant service name
+        if (connectorName == null) {
+            ejbRemoteConnectorServiceName = EJBRemoteConnectorService.SERVICE_NAME;
+        } else {
+            ejbRemoteConnectorServiceName = EJBRemoteConnectorService.serviceNameFor(connectorName);
+        }
+        final ServiceBuilder<EJBRemoteConnectorService> ejbRemoteConnectorServiceBuilder = serviceTarget.addService(ejbRemoteConnectorServiceName, ejbRemoteConnectorService);
         // add dependency on the Remoting subsystem endpoint
         ejbRemoteConnectorServiceBuilder.addDependency(RemotingServices.SUBSYSTEM_ENDPOINT, Endpoint.class, ejbRemoteConnectorService.getEndpointInjector());
         // add dependency on the remoting server (which allows remoting connector to connect to it)
@@ -153,6 +185,7 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         EJB3RemoteResourceDefinition.CONNECTOR_REF.validateAndSet(operation, model);
         EJB3RemoteResourceDefinition.THREAD_POOL_NAME.validateAndSet(operation, model);
+        EJB3RemoteResourceDefinition.EJB_CHANNEL_NAME.validateAndSet(operation, model);
     }
 
     private OptionMap getChannelCreationOptions(final OperationContext context) throws OperationFailedException {
@@ -186,5 +219,15 @@ public class EJB3RemoteServiceAdd extends AbstractBoottimeAddStepHandler {
             return Options.class.getName();
         }
         throw EjbMessages.MESSAGES.unknownChannelCreationOptionType(optionType);
+    }
+
+    ServiceName getEJB3RemoteConnectorServiceName(final PathAddress pathAddress) {
+        // for unnamed connector (which was allowed in older versions of the model), we just use a constant service name
+        if (this.unnamedRemoteConnector) {
+            return  EJBRemoteConnectorService.SERVICE_NAME;
+        }
+        final String connectorName = pathAddress.getLastElement().getValue();
+        return EJBRemoteConnectorService.serviceNameFor(connectorName);
+
     }
 }

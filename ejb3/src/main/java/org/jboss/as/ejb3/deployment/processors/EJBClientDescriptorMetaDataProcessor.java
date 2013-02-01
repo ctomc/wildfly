@@ -143,6 +143,7 @@ public class EJBClientDescriptorMetaDataProcessor implements DeploymentUnitProce
 
         final JBossEJBClientXmlConfiguration ejbClientConfig = new JBossEJBClientXmlConfiguration();
         ejbClientConfig.setInvocationTimeout(ejbClientDescriptorMetaData.getInvocationTimeout());
+        ejbClientConfig.setEJBRemotingChannelName(ejbClientDescriptorMetaData.getEjbChannelName());
         // deployment node selector
         final String deploymentNodeSelectorClassName = ejbClientDescriptorMetaData.getDeploymentNodeSelector();
         if (deploymentNodeSelectorClassName != null && !deploymentNodeSelectorClassName.trim().isEmpty()) {

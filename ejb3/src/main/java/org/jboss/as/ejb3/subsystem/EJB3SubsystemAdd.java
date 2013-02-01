@@ -110,7 +110,9 @@ import org.jboss.as.ejb3.iiop.RemoteObjectSubstitutionService;
 import org.jboss.as.ejb3.iiop.stub.DynamicStubFactoryFactory;
 import org.jboss.as.ejb3.remote.DefaultEjbClientContextService;
 import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
+import org.jboss.as.ejb3.remote.EJBRemoteTransactionsRepository;
 import org.jboss.as.ejb3.remote.LocalEjbReceiver;
+import org.jboss.as.ejb3.remote.RemoteAsyncInvocationCancelStatusService;
 import org.jboss.as.ejb3.remote.TCCLEJBClientContextSelectorService;
 import org.jboss.as.ejb3.util.ServiceLookupValue;
 import org.jboss.as.jacorb.rmi.DelegatingStubFactoryFactory;
@@ -124,7 +126,9 @@ import org.jboss.as.server.DeploymentProcessorTarget;
 import org.jboss.as.server.ServerEnvironment;
 import org.jboss.as.server.deployment.Phase;
 import org.jboss.as.server.deployment.jbossallxml.JBossAllXmlParserRegisteringProcessor;
+import org.jboss.as.txn.service.TransactionManagerService;
 import org.jboss.as.txn.service.TxnServices;
+import org.jboss.as.txn.service.UserTransactionService;
 import org.jboss.com.sun.corba.se.impl.javax.rmi.RemoteObjectSubstitutionManager;
 import org.jboss.dmr.ModelNode;
 import org.jboss.ejb.client.EJBClientContext;
@@ -355,6 +359,21 @@ class EJB3SubsystemAdd extends AbstractBoottimeAddStepHandler {
                 TCCLEJBClientContextSelectorService.class, clientContextService.getTCCLBasedEJBClientContextSelectorInjector());
 
         if (!appclient) {
+            // add ejb remote transactions repository service
+            final EJBRemoteTransactionsRepository transactionsRepository = new EJBRemoteTransactionsRepository();
+            final ServiceController transactionRepositoryServiceController = serviceTarget.addService(EJBRemoteTransactionsRepository.SERVICE_NAME, transactionsRepository)
+                    .addDependency(TransactionManagerService.SERVICE_NAME, TransactionManager.class, transactionsRepository.getTransactionManagerInjector())
+                    .addDependency(UserTransactionService.SERVICE_NAME, UserTransaction.class, transactionsRepository.getUserTransactionInjector())
+                    .setInitialMode(ServiceController.Mode.ACTIVE)
+                    .install();
+            newControllers.add(transactionRepositoryServiceController);
+
+            // Service responsible for tracking cancel() invocations on remote async method calls
+            final RemoteAsyncInvocationCancelStatusService asyncInvocationCancelStatusService = new RemoteAsyncInvocationCancelStatusService();
+            final ServiceController asyncCancelTrackerServiceController = serviceTarget.addService(RemoteAsyncInvocationCancelStatusService.SERVICE_NAME, asyncInvocationCancelStatusService)
+                    .install();
+            newControllers.add(asyncCancelTrackerServiceController);
+
             // get the node name
             final String nodeName = SecurityActions.getSystemProperty(ServerEnvironment.NODE_NAME);
 

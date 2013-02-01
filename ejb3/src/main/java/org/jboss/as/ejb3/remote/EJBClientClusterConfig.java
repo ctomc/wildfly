@@ -49,6 +49,7 @@ public class EJBClientClusterConfig extends EJBClientCommonConnectionConfig impl
     public EJBClientClusterConfig(final EJBClientDescriptorMetaData.ClusterConfig clusterConfig, final ClassLoader deploymentClassLoader, final ServiceRegistry serviceRegistry) {
         this.delegate = clusterConfig;
         this.setConnectionTimeout(clusterConfig.getConnectTimeout());
+        this.setEjbChannelName(clusterConfig.getEjbChannelName());
         // setup the channel creation options
         final Properties channelProps = clusterConfig.getChannelCreationOptions();
         if (channelProps != null) {

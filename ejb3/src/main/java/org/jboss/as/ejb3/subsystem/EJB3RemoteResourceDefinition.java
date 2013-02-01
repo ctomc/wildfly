@@ -27,23 +27,30 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
 import org.jboss.as.controller.SimpleAttributeDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
+import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
+import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
+import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
+import org.jboss.as.controller.transform.ResourceTransformer;
+import org.jboss.as.controller.transform.TransformersSubRegistration;
+import org.jboss.as.ejb3.remote.EJBRemoteConnectorService;
+import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.ModelType;
 
 /**
  * A {@link org.jboss.as.controller.ResourceDefinition} for the EJB remote service
  * <p/>
- * User: Jaikiran Pai
+ * @author : Jaikiran Pai
  */
 public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
-
-    public static final EJB3RemoteResourceDefinition INSTANCE = new EJB3RemoteResourceDefinition();
 
     static final SimpleAttributeDefinition CONNECTOR_REF =
             new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.CONNECTOR_REF, ModelType.STRING, true)
@@ -57,6 +64,13 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .build();
 
+    static final SimpleAttributeDefinition EJB_CHANNEL_NAME =
+            new SimpleAttributeDefinitionBuilder(EJB3SubsystemModel.EJB_CHANNEL_NAME, ModelType.STRING, true)
+                    .setAllowExpression(true)
+                    .setDefaultValue(new ModelNode().set(EJBRemoteConnectorService.DEFAULT_EJB_CHANNEL_NAME))
+                    .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
+                    .build();
+
 
     private static final Map<String, AttributeDefinition> ATTRIBUTES;
 
@@ -64,15 +78,29 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
         Map<String, AttributeDefinition> map = new LinkedHashMap<String, AttributeDefinition>();
         map.put(CONNECTOR_REF.getName(), CONNECTOR_REF);
         map.put(THREAD_POOL_NAME.getName(), THREAD_POOL_NAME);
+        map.put(EJB_CHANNEL_NAME.getName(), EJB_CHANNEL_NAME);
 
         ATTRIBUTES = Collections.unmodifiableMap(map);
     }
 
+    private final EJB3RemoteConnectorAdd ejb3RemoteConnectorAddHandler;
 
-    private EJB3RemoteResourceDefinition() {
-        super(EJB3SubsystemModel.REMOTE_SERVICE_PATH,
+    /**
+     * @deprecated Use {@link #EJB3RemoteResourceDefinition(org.jboss.as.controller.PathElement, org.jboss.as.controller.descriptions.ResourceDescriptionResolver, EJB3RemoteConnectorAdd, EJB3RemoteConnectorRemove)}
+     *              instead
+     */
+    @Deprecated
+    EJB3RemoteResourceDefinition() {
+        this(EJB3SubsystemModel.REMOTE_SERVICE_PATH,
                 EJB3Extension.getResourceDescriptionResolver(EJB3SubsystemModel.REMOTE),
-                EJB3RemoteServiceAdd.INSTANCE, EJB3RemoteServiceRemove.INSTANCE);
+                new EJB3RemoteConnectorAdd(true), new EJB3RemoteConnectorRemove(true));
+    }
+
+    EJB3RemoteResourceDefinition(final PathElement path, final ResourceDescriptionResolver descriptionResolver,
+                                    final EJB3RemoteConnectorAdd addHandler, final EJB3RemoteConnectorRemove removeHandler) {
+        super(path, descriptionResolver, addHandler, removeHandler);
+        this.ejb3RemoteConnectorAddHandler = addHandler;
+
     }
 
     @Override
@@ -87,10 +115,15 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     public void registerChildren(ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
         // register channel-creation-options as sub model for EJB remote service
-        resourceRegistration.registerSubModel(new ChannelCreationOptionResource());
+        resourceRegistration.registerSubModel(new ChannelCreationOptionResource(this.ejb3RemoteConnectorAddHandler));
     }
 
-    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder builder) {
-        ChannelCreationOptionResource.registerTransformers_1_1_0(builder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH));
+    static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder transformationBuilder) {
+        // for 1.1.0 discard the "ejb-channel-name" attribute which was introduced in a later version
+        final ResourceTransformationDescriptionBuilder remoteConnectorTransformationBuilder = transformationBuilder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH);
+        remoteConnectorTransformationBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB_CHANNEL_NAME)
+                .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(EJBRemoteConnectorService.DEFAULT_EJB_CHANNEL_NAME)), EJB_CHANNEL_NAME);
+
+        ChannelCreationOptionResource.registerTransformers_1_1_0(remoteConnectorTransformationBuilder);
     }
 }

@@ -49,6 +49,7 @@ class EJBClientCommonConnectionConfig implements EJBClientConfiguration.CommonCo
     private OptionMap channelCreationOptions = OptionMap.EMPTY;
     private long connectionTimeout = 5000;
     private CallbackHandlerProvider callbackHandlerProvider;
+    private String ejbChannelName;
 
     @Override
     public OptionMap getConnectionCreationOptions() {
@@ -70,6 +71,11 @@ class EJBClientCommonConnectionConfig implements EJBClientConfiguration.CommonCo
         return this.channelCreationOptions;
     }
 
+    @Override
+    public String getEJBRemotingChannelName() {
+        return this.ejbChannelName;
+    }
+
     protected void setChannelCreationOptions(final OptionMap channelCreationOptions) {
         this.channelCreationOptions = channelCreationOptions;
     }
@@ -80,6 +86,10 @@ class EJBClientCommonConnectionConfig implements EJBClientConfiguration.CommonCo
 
     protected void setConnectionTimeout(final long timeout) {
         this.connectionTimeout = timeout;
+    }
+
+    protected void setEjbChannelName(final String channelName) {
+        this.ejbChannelName = channelName;
     }
 
     protected void setCallbackHandler(final ServiceRegistry serviceRegistry, final String username, final String securityRealmName) {

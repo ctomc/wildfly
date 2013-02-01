@@ -168,7 +168,7 @@ public class EJB3Subsystem13Parser extends EJB3Subsystem12Parser {
 
     }
 
-    private void parseChannelCreationOptions(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> operations) throws XMLStreamException {
+    protected void parseChannelCreationOptions(final XMLExtendedStreamReader reader, final PathAddress address, final List<ModelNode> operations) throws XMLStreamException {
         while (reader.hasNext() && reader.nextTag() != XMLStreamConstants.END_ELEMENT) {
             switch (EJB3SubsystemXMLElement.forName(reader.getLocalName())) {
                 case OPTION: {

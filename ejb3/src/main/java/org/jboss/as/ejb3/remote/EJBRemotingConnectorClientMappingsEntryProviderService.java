@@ -48,12 +48,16 @@ import java.util.List;
  */
 public class EJBRemotingConnectorClientMappingsEntryProviderService implements Service<Registry.RegistryEntryProvider<String, List<ClientMapping>>> {
 
-    public static final ServiceName SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remoting").append("connector").append("client-mapping-entry-provider-service");
+    private static final ServiceName BASE_SERVICE_NAME = ServiceName.JBOSS.append("ejb").append("remoting").append("connector").append("client-mapping-entry-provider-service");
 
     private final ServiceName remotingConnectorServiceName;
     private volatile InjectedSocketBindingStreamServerService remotingServer;
     private final Registry.RegistryEntryProvider<String, List<ClientMapping>> registryEntryProvider = new ClientMappingEntryProvider();
     private final InjectedValue<ServerEnvironment> serverEnvironment = new InjectedValue<ServerEnvironment>();
+
+    public static ServiceName serviceNameForEJBRemotingConnector(final String ejbRemotingConnectorName) {
+        return BASE_SERVICE_NAME.append(ejbRemotingConnectorName);
+    }
 
     public EJBRemotingConnectorClientMappingsEntryProviderService(final ServiceName remotingConnectorServiceName) {
         this.remotingConnectorServiceName = remotingConnectorServiceName;
