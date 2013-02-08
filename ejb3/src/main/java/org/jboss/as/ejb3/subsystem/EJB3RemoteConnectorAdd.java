@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2011, Red Hat, Inc., and individual contributors
+ * Copyright 2013, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -107,7 +107,7 @@ public class EJB3RemoteConnectorAdd extends AbstractAddStepHandler {
     Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final PathAddress pathAddress, final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         final String connectorName;
         if (this.unnamedRemoteConnector) {
-            connectorName = null;
+            connectorName = EJBRemoteConnectorService.getDefaultEJBRemotingConnectorName();
         } else {
             connectorName = pathAddress.getLastElement().getValue();
         }
@@ -117,7 +117,7 @@ public class EJB3RemoteConnectorAdd extends AbstractAddStepHandler {
     Collection<ServiceController<?>> installRuntimeServices(final OperationContext context, final ModelNode operation, final ModelNode model, final ServiceVerificationHandler verificationHandler) throws OperationFailedException {
         final String connectorName;
         if (this.unnamedRemoteConnector) {
-            connectorName = null;
+            connectorName = EJBRemoteConnectorService.getDefaultEJBRemotingConnectorName();
         } else {
             connectorName = PathAddress.pathAddress(operation.get(ModelDescriptionConstants.ADDRESS)).getLastElement().getValue();
         }
@@ -185,7 +185,9 @@ public class EJB3RemoteConnectorAdd extends AbstractAddStepHandler {
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
         EJB3RemoteResourceDefinition.CONNECTOR_REF.validateAndSet(operation, model);
         EJB3RemoteResourceDefinition.THREAD_POOL_NAME.validateAndSet(operation, model);
-        EJB3RemoteResourceDefinition.EJB_CHANNEL_NAME.validateAndSet(operation, model);
+        if (operation.hasDefined(EJB3RemoteResourceDefinition.EJB_CHANNEL_NAME.getName())) {
+            EJB3RemoteResourceDefinition.EJB_CHANNEL_NAME.validateAndSet(operation, model);
+        }
     }
 
     private OptionMap getChannelCreationOptions(final OperationContext context) throws OperationFailedException {

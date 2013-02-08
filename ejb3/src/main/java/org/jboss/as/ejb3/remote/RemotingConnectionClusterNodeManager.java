@@ -101,7 +101,7 @@ class RemotingConnectionClusterNodeManager implements ClusterNodeManager {
                     final long timeout = clusterNodeConfiguration == null ? clusterConfiguration.getConnectionTimeout() : clusterNodeConfiguration.getConnectionTimeout();
                     // wait for the connection to be established
                     connection = IoFutureHelper.get(futureConnection, timeout, TimeUnit.MILLISECONDS);
-                    ejbChannelName = clusterNodeConfiguration.getEJBRemotingChannelName() == null ? clusterConfiguration.getEJBRemotingChannelName() : clusterNodeConfiguration.getEJBRemotingChannelName();
+                    ejbChannelName = clusterNodeConfiguration == null ? clusterConfiguration.getEJBRemotingChannelName() : clusterNodeConfiguration.getEJBRemotingChannelName();
                     // create a re-connect handler (which will be used on connection breaking down)
                     reconnectHandler = new ClusterNodeReconnectHandler(destinationHost, destinationPort, ejbChannelName, connectionCreationOptions, callbackHandler, channelCreationOptions, timeout);
                 }
