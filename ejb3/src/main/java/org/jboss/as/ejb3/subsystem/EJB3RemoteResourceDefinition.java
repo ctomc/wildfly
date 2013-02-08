@@ -27,6 +27,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.jboss.as.controller.AttributeDefinition;
+import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
 import org.jboss.as.controller.SimpleAttributeDefinition;
@@ -36,6 +37,7 @@ import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.registry.AttributeAccess;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.transform.PathAddressTransformer;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -119,11 +121,21 @@ public class EJB3RemoteResourceDefinition extends SimpleResourceDefinition {
     }
 
     static void registerTransformers_1_1_0(ResourceTransformationDescriptionBuilder transformationBuilder) {
+        transformationBuilder.addChildRedirection(PathElement.pathElement(EJB3SubsystemModel.SERVICE, EJB3SubsystemModel.CONNECTORS), new RemoteConnectorPathAddressTransformer());
+
         // for 1.1.0 discard the "ejb-channel-name" attribute which was introduced in a later version
         final ResourceTransformationDescriptionBuilder remoteConnectorTransformationBuilder = transformationBuilder.addChildResource(EJB3SubsystemModel.REMOTE_SERVICE_PATH);
         remoteConnectorTransformationBuilder.getAttributeBuilder().addRejectCheck(RejectAttributeChecker.DEFINED, EJB_CHANNEL_NAME)
                 .setDiscard(new DiscardAttributeChecker.DiscardAttributeValueChecker(new ModelNode(EJBRemoteConnectorService.DEFAULT_EJB_CHANNEL_NAME)), EJB_CHANNEL_NAME);
-
         ChannelCreationOptionResource.registerTransformers_1_1_0(remoteConnectorTransformationBuilder);
+    }
+
+    private static class RemoteConnectorPathAddressTransformer implements PathAddressTransformer {
+
+        @Override
+        public PathAddress transform(PathElement current, Builder builder) {
+            return PathAddress.pathAddress(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, EJB3Extension.SUBSYSTEM_NAME),
+                    PathElement.pathElement(EJB3SubsystemModel.SERVICE, EJB3SubsystemModel.REMOTE));
+        }
     }
 }

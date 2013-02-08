@@ -178,8 +178,15 @@ public class EJB3SubsystemXMLPersister implements XMLElementWriter<SubsystemMars
         }
         // write the remoting element
         if (model.hasDefined(SERVICE) && model.get(SERVICE).hasDefined(REMOTE)) {
+            // <connectors>
+            writer.writeStartElement(EJB3SubsystemXMLElement.CONNECTORS.getLocalName());
+            // <remote>
             writer.writeStartElement(EJB3SubsystemXMLElement.REMOTE.getLocalName());
+            // write the attributes of the remote element
             writeRemote(writer, model.get(SERVICE, REMOTE));
+            // </remote>
+            writer.writeEndElement();
+            // </connectors>
             writer.writeEndElement();
         }
 
