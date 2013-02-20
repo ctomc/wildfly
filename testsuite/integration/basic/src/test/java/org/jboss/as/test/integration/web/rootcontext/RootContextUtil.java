@@ -52,21 +52,22 @@ import org.jboss.logging.Logger;
 public class RootContextUtil {
 
     private static Logger log = Logger.getLogger(RootContextUtil.class);
-
     // FIXME Duplicated from org.jboss.as.web.Constants.Constants
-    private static String VIRTUAL_SERVER = "virtual-server";
+    private static String VIRTUAL_HOST = "virtual-host";
+
     private static String ENABLE_WELCOME_ROOT = "enable-welcome-root";
+    private static final String WEB_SUBSYSTEM_NAME = "undertow";
 
     public static void createVirtualServer(ModelControllerClient client, String serverName) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
-        op.get(OP_ADDR).add(SUBSYSTEM, "web");
-        op.get(OP_ADDR).add(VIRTUAL_SERVER, serverName);
+        op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
+        op.get(OP_ADDR).add(VIRTUAL_HOST, serverName);
 
-        op.get(NAME).set(ENABLE_WELCOME_ROOT);
-        op.get(ENABLE_WELCOME_ROOT).set(false);
+        op.get("default-host").set("default-host");
+
 
         updates.add(op);
 
@@ -78,8 +79,8 @@ public class RootContextUtil {
 
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
-        op.get(OP_ADDR).add(SUBSYSTEM, "web");
-        op.get(OP_ADDR).add(VIRTUAL_SERVER, serverName);
+        op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
+        op.get(OP_ADDR).add(VIRTUAL_HOST, serverName);
         updates.add(op);
 
         applyUpdates(updates, client);

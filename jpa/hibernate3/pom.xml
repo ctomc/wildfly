@@ -107,10 +107,10 @@
             <artifactId>jboss-as-web</artifactId>
         </dependency>
 
-        <dependency>
+       <!-- <dependency>
             <groupId>org.jboss.web</groupId>
             <artifactId>jbossweb</artifactId>
-        </dependency>
+        </dependency>-->
 
         <!-- External -->
 

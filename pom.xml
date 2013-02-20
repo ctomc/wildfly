@@ -99,6 +99,8 @@
         <version.gnu.getopt>1.0.13</version.gnu.getopt>
         <version.io.netty>3.6.2.Final</version.io.netty>
         <version.io.undertow>1.0.0.Alpha2</version.io.undertow>
+        <version.io.undertow.jastow>1.0.0.Alpha1</version.io.undertow.jastow>
+        <version.io.undertow.subsystem>1.0.0.Alpha1-SNAPSHOT</version.io.undertow.subsystem>
         <version.javax.activation>1.1.1</version.javax.activation>
         <version.javax.enterprise>1.0-SP4</version.javax.enterprise>
         <version.javax.faces>1.2_15-jbossorg-2</version.javax.faces>
@@ -229,6 +231,7 @@
         <version.org.jboss.stdio>1.0.1.GA</version.org.jboss.stdio>
         <version.org.jboss.threads>2.1.0.Final</version.org.jboss.threads>
         <version.org.jboss.web>7.2.0.Final</version.org.jboss.web>
+        <version.org.jboss.web.jasper-jdt>7.0.3.Final</version.org.jboss.web.jasper-jdt>
         <version.org.jboss.weld.weld>1.1.11.Final</version.org.jboss.weld.weld>
         <version.org.jboss.weld.weld-api>1.1.Final</version.org.jboss.weld.weld-api>
         <version.org.jboss.ws.api>1.0.2.Alpha1</version.org.jboss.ws.api>
@@ -5611,6 +5614,41 @@
                 <version>${version.org.jboss.as.jbossweb-native}</version>
             </dependency>
 
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-core</artifactId>
+                <version>${version.io.undertow}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-servlet</artifactId>
+                <version>${version.io.undertow}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.undertow</groupId>
+                <artifactId>undertow-jsp</artifactId>
+                <version>${version.io.undertow}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.web</groupId>
+                <artifactId>jasper-jdt</artifactId>
+                <version>${version.org.jboss.web.jasper-jdt}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.jboss.as</groupId>
+                <artifactId>jboss-as-undertow</artifactId>
+                <version>${version.io.undertow.subsystem}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.undertow.jastow</groupId>
+                <artifactId>jastow</artifactId>
+                <version>${version.io.undertow.jastow}</version>
+            </dependency>
 
             <dependency>
                 <groupId>org.jboss.weld</groupId>
@@ -6489,8 +6527,8 @@
                 <module>security-util</module>
                 <module>spec-api</module>
                 <module>transactions</module>
-                <module>web</module>
                 <module>web-common</module>
+                <module>web</module>
                 <module>webservices</module>
                 <module>weld</module>
                 <module>xts</module>

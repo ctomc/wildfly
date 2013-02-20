@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="urn:jboss:domain:undertow:1.0"
+           targetNamespace="urn:jboss:domain:undertow:1.0"
+           elementFormDefault="qualified"
+           attributeFormDefault="unqualified"
+           version="1.0">
+    <!-- The mail subsystem root element -->
+    <xs:element name="subsystem" type="undertow-subsystemType"/>
+    <xs:complexType name="undertow-subsystemType">
+        <xs:annotation>
+            <xs:documentation>
+                <![CDATA[
+                The configuration of the undertow subsystem.
+            ]]>
+            </xs:documentation>
+        </xs:annotation>
+        <xs:choice minOccurs="1" maxOccurs="unbounded">
+            <xs:element name="worker" type="workerType"/>
+            <xs:element name="buffer-pool" type="bufferPoolType"/>
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="workerType">
+        <xs:attribute name="name" use="required" type="xs:string" default="default"/>
+        <xs:attribute name="task-core-threads" use="optional" type="xs:int" />
+        <xs:attribute name="write-threads" use="optional" type="xs:int" />
+        <xs:attribute name="read-threads" use="optional" type="xs:int" />
+    </xs:complexType>
+    <xs:complexType name="bufferPoolType">
+        <xs:attribute name="name" use="required" type="xs:string" default="default"/>
+        <xs:attribute name="buffer-size" use="optional" type="xs:int" />
+        <xs:attribute name="buffers-per-slice" use="optional" type="xs:int" />
+    </xs:complexType>
+
+
+</xs:schema>
