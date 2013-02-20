@@ -1,0 +1,31 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!--  See src/resources/configuration/ReadMe.txt for how the configuration assembly works -->
+<config>
+    <extension-module>org.jboss.as.undertow</extension-module>
+    <subsystem xmlns="urn:jboss:domain:undertow:1.0">
+        <worker name="default" task-core-threads="12" write-threads="3" read-threads="3"/>
+        <buffer-pool name="default" buffer-size="2048" buffers-per-slice="512"/>
+
+        <server name="default-server" default-host="localhost" servlet-container="default">
+            <http-listener name="default" socket-binding="http"/>
+            <?AJP?>
+            <host name="localhost" alias="www.localhost">
+                <handlers>
+                    <file-error-page code="404" file="/my/error/page.html"/>
+                </handlers>
+            </host>
+        </server>
+        <servlet-container name="default">
+            <jsp-config/>
+        </servlet-container>
+    </subsystem>
+    <supplement name="ha">
+        <replacement placeholder="AJP">
+            <ajp-listener name="ajp-connector" socket-binding="ajp"/>
+        </replacement>
+    </supplement>
+    <socket-binding name="http" port="8080"/>
+    <socket-binding name="https" port="8443"/>
+    <socket-binding name="ajp" port="8009"/>
+</config>
+

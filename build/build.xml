@@ -1326,6 +1326,17 @@
 
         <module-def name="ibm.jdk"/>
 
+        <module-def name="org.jboss.as.undertow">
+            <maven-resource group="org.jboss.as" artifact="jboss-as-undertow"/>
+        </module-def>
+        <module-def name="io.undertow">
+            <maven-resource group="io.undertow" artifact="undertow-core"/>
+            <maven-resource group="io.undertow" artifact="undertow-servlet"/>
+            <maven-resource group="io.undertow" artifact="undertow-jsp"/>
+            <maven-resource group="io.undertow.jastow" artifact="jastow"/>
+            <maven-resource group="org.jboss.web" artifact="jasper-jdt"/>
+        </module-def>
+
     </target>
 
     <target name="bundles">
