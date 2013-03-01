@@ -16,13 +16,26 @@
  */
 package org.jboss.as.arquillian.container;
 
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
+import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
+import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
+import static org.jboss.as.controller.client.helpers.ClientConstants.FAILURE_DESCRIPTION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
+import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
+import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE;
+import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
+import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
+import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -55,20 +68,6 @@ import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.dmr.ModelNode;
 import org.jboss.dmr.Property;
 import org.jboss.logging.Logger;
-
-import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STARTING;
-import static org.jboss.as.controller.client.helpers.ClientConstants.CONTROLLER_PROCESS_STATE_STOPPING;
-import static org.jboss.as.controller.client.helpers.ClientConstants.DEPLOYMENT;
-import static org.jboss.as.controller.client.helpers.ClientConstants.FAILURE_DESCRIPTION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OP;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OP_ADDR;
-import static org.jboss.as.controller.client.helpers.ClientConstants.OUTCOME;
-import static org.jboss.as.controller.client.helpers.ClientConstants.READ_ATTRIBUTE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.READ_RESOURCE_OPERATION;
-import static org.jboss.as.controller.client.helpers.ClientConstants.RECURSIVE;
-import static org.jboss.as.controller.client.helpers.ClientConstants.RESULT;
-import static org.jboss.as.controller.client.helpers.ClientConstants.SUBSYSTEM;
-import static org.jboss.as.controller.client.helpers.ClientConstants.SUCCESS;
 
 /**
  * A helper class to join management related operations, like extract sub system ip/port (web/jmx)
@@ -131,12 +130,12 @@ public class ManagementClient {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            List<Property> vhosts = rootNode.get("subsystem",WEB).get("virtual-host").asPropertyList();
+            List<Property> vhosts = rootNode.get("subsystem", WEB).get("server").asPropertyList();
             ModelNode socketBinding = new ModelNode();
-            if (!vhosts.isEmpty()){//if empty no virtual hosts defined
-                socketBinding = vhosts.get(0).getValue().get("http-listener","default").get("socket-binding");
+            if (!vhosts.isEmpty()) {//if empty no virtual hosts defined
+                socketBinding = vhosts.get(0).getValue().get("http-listener", "default").get("socket-binding");
             }
-            if(!socketBinding.isDefined()) {
+            if (!socketBinding.isDefined()) {
                 try {
                     webUri = new URI("http://localhost:8080");
                 } catch (URISyntaxException e) {
@@ -208,8 +207,7 @@ public class ManagementClient {
     }
 
     private static ModelNode defined(final ModelNode node, final String message) {
-        if (!node.isDefined())
-            throw new IllegalStateException(message);
+        if (!node.isDefined()) { throw new IllegalStateException(message); }
         return node;
     }
 
@@ -224,7 +222,7 @@ public class ManagementClient {
             ModelNode binding = executeForResult(operation);
             String ip = binding.get("bound-address").asString();
             //it appears some system can return a binding with the zone specifier on the end
-            if(ip.contains(":") && ip.contains("%")) {
+            if (ip.contains(":") && ip.contains("%")) {
                 ip = ip.split("%")[0];
             }
 
@@ -376,6 +374,7 @@ public class ManagementClient {
         }
         return ejbUri;
     }
+
     //-------------------------------------------------------------------------------------||
     // Helper classes ---------------------------------------------------------------------||
     //-------------------------------------------------------------------------------------||
@@ -387,7 +386,7 @@ public class ManagementClient {
         }
     }
 
-    private class MBeanConnectionProxy implements MBeanServerConnection{
+    private class MBeanConnectionProxy implements MBeanServerConnection {
         private MBeanServerConnection connection;
 
         /**
@@ -424,7 +423,7 @@ public class ManagementClient {
 
         @Override
         public ObjectInstance createMBean(String className, ObjectName name, ObjectName loaderName, Object[] params,
-                String[] signature) throws ReflectionException, InstanceAlreadyExistsException,
+                                          String[] signature) throws ReflectionException, InstanceAlreadyExistsException,
                 MBeanException, NotCompliantMBeanException, InstanceNotFoundException, IOException {
             checkConnection();
             return connection.createMBean(className, name, loaderName, params, signature);
@@ -551,7 +550,7 @@ public class ManagementClient {
 
         @Override
         public void addNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter,
-                Object handback) throws InstanceNotFoundException, IOException {
+                                            Object handback) throws InstanceNotFoundException, IOException {
             try {
                 connection.addNotificationListener(name, listener, filter, handback);
             } catch (IOException e) {
@@ -621,7 +620,7 @@ public class ManagementClient {
 
         @Override
         public void removeNotificationListener(ObjectName name, NotificationListener listener, NotificationFilter filter,
-                Object handback) throws InstanceNotFoundException, ListenerNotFoundException, IOException {
+                                               Object handback) throws InstanceNotFoundException, ListenerNotFoundException, IOException {
             try {
                 connection.removeNotificationListener(name, listener, filter, handback);
             } catch (IOException e) {
@@ -654,25 +653,25 @@ public class ManagementClient {
             }
         }
 
-        private boolean checkConnection(){
-            try{
+        private boolean checkConnection() {
+            try {
                 this.connection.getMBeanCount();
                 return true;
-            }catch(IOException ioe){
+            } catch (IOException ioe) {
             }
             this.connection = this.getConnection();
             return false;
         }
 
         private MBeanServerConnection getConnection() {
-                try {
-                    final HashMap<String, Object> env = new HashMap<String, Object>();
-                    env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
-                    connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
-                    connection = connector.getMBeanServerConnection();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+            try {
+                final HashMap<String, Object> env = new HashMap<String, Object>();
+                env.put(CallbackHandler.class.getName(), Authentication.getCallbackHandler());
+                connector = JMXConnectorFactory.connect(getRemoteJMXURL(), env);
+                connection = connector.getMBeanServerConnection();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             return connection;
         }
     }

@@ -19,18 +19,35 @@
         <xs:choice minOccurs="1" maxOccurs="unbounded">
             <xs:element name="worker" type="workerType"/>
             <xs:element name="buffer-pool" type="bufferPoolType"/>
+            <xs:element name="server" type="serverType"/>
+            <xs:element name="servlet-container" type="servletContainerType"/>
         </xs:choice>
     </xs:complexType>
     <xs:complexType name="workerType">
-        <xs:attribute name="name" use="required" type="xs:string" default="default"/>
+        <xs:attribute name="name" use="required" type="xs:string" />
         <xs:attribute name="task-core-threads" use="optional" type="xs:int" />
         <xs:attribute name="write-threads" use="optional" type="xs:int" />
         <xs:attribute name="read-threads" use="optional" type="xs:int" />
     </xs:complexType>
     <xs:complexType name="bufferPoolType">
-        <xs:attribute name="name" use="required" type="xs:string" default="default"/>
+        <xs:attribute name="name" use="required" type="xs:string" />
         <xs:attribute name="buffer-size" use="optional" type="xs:int" />
         <xs:attribute name="buffers-per-slice" use="optional" type="xs:int" />
+    </xs:complexType>
+    <xs:complexType name="serverType">
+        <xs:attribute name="name" use="required" type="xs:string" />
+        <xs:attribute name="default-host" use="optional" type="xs:string" />
+        <xs:attribute name="servlet-container" use="optional" type="xs:string" />
+        <xs:choice>
+            <xs:element name="http-listener" type="http-listener-type" />
+        </xs:choice>
+    </xs:complexType>
+    <xs:complexType name="http-listener-type">
+        <xs:attribute name="name" use="required" type="xs:string" />
+        <xs:attribute name="socket-binding" use="required" type="xs:string" />
+    </xs:complexType>
+    <xs:complexType name="servletContainerType">
+        <xs:attribute name="name" use="required" type="xs:string" />
     </xs:complexType>
 
 
