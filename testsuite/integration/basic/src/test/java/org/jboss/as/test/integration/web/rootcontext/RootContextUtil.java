@@ -23,7 +23,6 @@ package org.jboss.as.test.integration.web.rootcontext;
 
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.DEPLOYMENT;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.NAME;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
@@ -53,7 +52,7 @@ public class RootContextUtil {
 
     private static Logger log = Logger.getLogger(RootContextUtil.class);
     // FIXME Duplicated from org.jboss.as.web.Constants.Constants
-    private static String VIRTUAL_HOST = "virtual-host";
+    private static String SERVER = "server";
 
     private static String ENABLE_WELCOME_ROOT = "enable-welcome-root";
     private static final String WEB_SUBSYSTEM_NAME = "undertow";
@@ -64,7 +63,7 @@ public class RootContextUtil {
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
-        op.get(OP_ADDR).add(VIRTUAL_HOST, serverName);
+        op.get(OP_ADDR).add(SERVER, serverName);
 
         op.get("default-host").set("default-host");
 
@@ -80,7 +79,7 @@ public class RootContextUtil {
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
-        op.get(OP_ADDR).add(VIRTUAL_HOST, serverName);
+        op.get(OP_ADDR).add(SERVER, serverName);
         updates.add(op);
 
         applyUpdates(updates, client);
