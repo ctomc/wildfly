@@ -35,11 +35,11 @@
         <xs:attribute name="buffers-per-slice" use="optional" type="xs:int"/>
     </xs:complexType>
     <xs:complexType name="serverType">
-        <xs:sequence>
+        <xs:choice>
             <xs:element name="http-listener" type="http-listener-type" maxOccurs="1"/>
             <xs:element name="ajp-listener" type="ajp-listener-type" maxOccurs="1"/>
             <xs:element name="host" type="hostType" minOccurs="1" maxOccurs="unbounded"/>
-        </xs:sequence>
+        </xs:choice>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="default-host" use="optional" type="xs:string"/>
         <xs:attribute name="servlet-container" use="optional" type="xs:string"/>
