@@ -21,10 +21,22 @@
  */
 package org.jboss.as.test.integration.management.api.web;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
+import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
@@ -51,20 +63,12 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.COMPOSITE;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.STEPS;
-import static org.jboss.as.test.integration.management.util.ModelUtil.createOpNode;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 /**
  * @author Dominik Pospisil <dpospisi@redhat.com>
  */
 @RunWith(Arquillian.class)
 @RunAsClient
-public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
+public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
     private final File keyStoreFile = new File(System.getProperty("java.io.tmpdir"), "test.keystore");
 
@@ -89,10 +93,10 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
 
         // only http connector present as a default
 
-        HashSet<String> connNames = getConnectorList();
-
-        assertTrue("HTTP connector missing.", connNames.contains("http"));
-        assertTrue(connNames.size() == 1);
+        Map<String, Set<String>> listeners = getListenerList();
+        Set<String> listenerNames = listeners.get("http");
+        assertEquals(1,listenerNames.size());
+        assertTrue("HTTP connector missing.", listenerNames.contains("default"));
     }
 
     @Test
@@ -110,7 +114,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
     @Test
     public void testHttpsConnector() throws Exception {
 
-        FileUtils.copyURLToFile(ConnectorTestCase.class.getResource("test.keystore"), keyStoreFile);
+        FileUtils.copyURLToFile(ListenerTestCase.class.getResource("test.keystore"), keyStoreFile);
         addConnector(Connector.HTTPS);
 
         // check that the connector is live
@@ -124,8 +128,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
 
         removeConnector(Connector.HTTPS);
 
-        if (keyStoreFile.exists())
-            keyStoreFile.delete();
+        if (keyStoreFile.exists()) { keyStoreFile.delete(); }
     }
 
     @Test
@@ -146,7 +149,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(addSocketOp);
 
         // execute and rollback add connector
-        ModelNode addConnectorOp = getAddConnectorOp(Connector.HTTPJIO);
+        ModelNode addConnectorOp = getAddListenerOp(Connector.HTTPJIO);
         ret = executeAndRollbackOperation(addConnectorOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -154,17 +157,17 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(addConnectorOp);
 
         // check it is listed
-        assertTrue(getConnectorList().contains("test-" + Connector.HTTPJIO.getName() + "-connector"));
+        assertTrue(getListenerList().get("http").contains("test-" + Connector.HTTPJIO.getName() + "-listener"));
 
         // execute and rollback remove connector
         ModelNode removeConnOp = getRemoveConnectorOp(Connector.HTTPJIO);
         ret = executeAndRollbackOperation(removeConnOp);
-        assertTrue("failed".equals(ret.get("outcome").asString()));
+        assertEquals("failed",ret.get("outcome").asString());
 
         // execute remove connector again
         executeOperation(removeConnOp);
 
-        Thread.sleep(5000);
+        Thread.sleep(1000);
         // check that the connector is not live
         String cURL = Connector.HTTP.getScheme() + "://" + url.getHost() + ":8181";
 
@@ -173,7 +176,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         // execute and rollback remove socket binding
         ModelNode removeSocketOp = getRemoveSocketBindingOp(Connector.HTTPJIO);
         ret = executeAndRollbackOperation(removeSocketOp);
-        assertTrue("failed".equals(ret.get("outcome").asString()));
+        assertEquals("failed",ret.get("outcome").asString());
 
         // execute remove socket again
         executeOperation(removeSocketOp);
@@ -186,11 +189,11 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(op);
 
         // add connector
-        op = getAddConnectorOp(conn);
+        op = getAddListenerOp(conn);
         executeOperation(op);
 
         // check it is listed
-        assertTrue(getConnectorList().contains("test-" + conn.getName() + "-connector"));
+        assertTrue(getListenerList().get(conn.getScheme()).contains("test-" + conn.getName() + "-listener"));
     }
 
     private ModelNode getAddSocketBindingOp(Connector conn) {
@@ -199,22 +202,16 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         return op;
     }
 
-    private ModelNode getAddConnectorOp(Connector conn) {
+    private ModelNode getAddListenerOp(Connector conn) {
         final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
         final ModelNode steps = composite.get(STEPS);
-        ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "add");
+        ModelNode op = createOpNode("subsystem=undertow/server=default-server/" + conn.getScheme() + "-listener=test-" + conn.getName() + "-listener", "add");
         op.get("socket-binding").set("test-" + conn.getName() + socketBindingCount);
-        op.get("scheme").set(conn.getScheme());
-        op.get("protocol").set(conn.getProtocol());
-        op.get("secure").set(conn.isSecure());
-        op.get("enabled").set(true);
-        steps.add(op);
+        //op.get("secure").set(conn.isSecure());
         if (conn.isSecure()) {
-            ModelNode ssl = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector/ssl=configuration", "add");
-            ssl.get("certificate-key-file").set(keyStoreFile.getAbsolutePath());
-            ssl.get("password").set("test123");
-            steps.add(ssl);
+            op.get("security-realm").set("ssl-realm");
         }
+        steps.add(op);
         return composite;
     }
 
@@ -224,11 +221,11 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         ModelNode op = getRemoveConnectorOp(conn);
         executeOperation(op);
 
-        Thread.sleep(5000);
+        Thread.sleep(1000);
         // check that the connector is not live
         String cURL = conn.getScheme() + "://" + url.getHost() + ":8181";
 
-        assertFalse("Connector not removed.", WebUtil.testHttpURL(cURL));
+        assertFalse("Listener not removed.", WebUtil.testHttpURL(cURL));
 
         // remove socket binding
         op = getRemoveSocketBindingOp(conn);
@@ -242,20 +239,43 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
     }
 
     private ModelNode getRemoveConnectorOp(Connector conn) {
-        ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "remove");
+        ModelNode op = createOpNode("subsystem=undertow/server=default-server/" + conn.getScheme() + "-listener=test-" + conn.getName() + "-listener", "remove");
         op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         return op;
     }
 
-    private HashSet<String> getConnectorList() throws Exception {
+    private Map<String, Set<String>> getListenerList() throws Exception {
+        HashMap<String, Set<String>> result = new HashMap<>();
+        result.put("http", getListenersByType("http-listener"));
+        result.put("https", getListenersByType("https-listener"));
+        result.put("ajp", getListenersByType("ajp-listener"));
 
-        ModelNode op = createOpNode("subsystem=web", "read-children-names");
-        op.get("child-type").set("connector");
+        return result;
+        /*ModelNode op = createOpNode("subsystem=undertow/server=default-server", "read-children-names");
+        op.get("child-type").set("http-listener");
+        ModelNode result = executeOperation(op);
+
+
+        List<ModelNode> connectors = result.asList();
+        HashSet<String> connNames = new HashSet<String>();
+        for (ModelNode n : connectors) {
+            if (n.asString().contains("listener")) {
+                connNames.add(n.asString());
+            }
+        }
+
+        return connNames;*/
+    }
+
+    private Set<String> getListenersByType(String type) throws Exception {
+        ModelNode op = createOpNode("subsystem=undertow/server=default-server", "read-children-names");
+        op.get("child-type").set(type);
         ModelNode result = executeOperation(op);
         List<ModelNode> connectors = result.asList();
         HashSet<String> connNames = new HashSet<String>();
         for (ModelNode n : connectors) {
             connNames.add(n.asString());
+
         }
 
         return connNames;

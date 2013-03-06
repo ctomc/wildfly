@@ -51,19 +51,20 @@ import org.jboss.logging.Logger;
 public class RootContextUtil {
 
     private static Logger log = Logger.getLogger(RootContextUtil.class);
-    // FIXME Duplicated from org.jboss.as.web.Constants.Constants
     private static String SERVER = "server";
+    private static String HOST = "host";
 
     private static String ENABLE_WELCOME_ROOT = "enable-welcome-root";
     private static final String WEB_SUBSYSTEM_NAME = "undertow";
 
-    public static void createVirtualServer(ModelControllerClient client, String serverName) throws Exception {
+    public static void createVirutalHost(ModelControllerClient client, String virutalHost) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(ADD);
         op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
-        op.get(OP_ADDR).add(SERVER, serverName);
+        op.get(OP_ADDR).add(SERVER, "default-server");
+        op.get(OP_ADDR).add(HOST, virutalHost);
 
         op.get("default-host").set("default-host");
 
@@ -73,13 +74,14 @@ public class RootContextUtil {
         applyUpdates(updates, client);
     }
 
-    public static void removeVirtualServer(final ModelControllerClient client, String serverName) throws Exception {
+    public static void removeVirtualHost(final ModelControllerClient client, String virtualHost) throws Exception {
         final List<ModelNode> updates = new ArrayList<ModelNode>();
 
         ModelNode op = new ModelNode();
         op.get(OP).set(REMOVE);
         op.get(OP_ADDR).add(SUBSYSTEM, WEB_SUBSYSTEM_NAME);
-        op.get(OP_ADDR).add(SERVER, serverName);
+        op.get(OP_ADDR).add(SERVER, "default-server");
+        op.get(OP_ADDR).add(HOST, virtualHost);
         updates.add(op);
 
         applyUpdates(updates, client);
