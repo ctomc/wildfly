@@ -146,7 +146,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(addSocketOp);
 
         // execute and rollback add connector
-        ModelNode addConnectorOp = getAddConnectorOp(Connector.HTTPJIO);
+        ModelNode addConnectorOp = getAddListenerOp(Connector.HTTPJIO);
         ret = executeAndRollbackOperation(addConnectorOp);
         assertTrue("failed".equals(ret.get("outcome").asString()));
 
@@ -186,7 +186,7 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         executeOperation(op);
 
         // add connector
-        op = getAddConnectorOp(conn);
+        op = getAddListenerOp(conn);
         executeOperation(op);
 
         // check it is listed
@@ -199,15 +199,16 @@ public class ConnectorTestCase extends ContainerResourceMgmtTestBase {
         return op;
     }
 
-    private ModelNode getAddConnectorOp(Connector conn) {
+    private ModelNode getAddListenerOp(Connector conn) {
         final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
         final ModelNode steps = composite.get(STEPS);
-        ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "add");
+        ModelNode op = createOpNode("subsystem=undertow/server=default-server/listener=test-" + conn.getName() + "-listener", "add");
         op.get("socket-binding").set("test-" + conn.getName() + socketBindingCount);
-        op.get("scheme").set(conn.getScheme());
+       //todo check if we need any of this
+       /* op.get("scheme").set(conn.getScheme());
         op.get("protocol").set(conn.getProtocol());
         op.get("secure").set(conn.isSecure());
-        op.get("enabled").set(true);
+        op.get("enabled").set(true);*/
         steps.add(op);
         if (conn.isSecure()) {
             ModelNode ssl = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector/ssl=configuration", "add");
