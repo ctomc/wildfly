@@ -1654,12 +1654,6 @@
                     <artifactId>jbossweb</artifactId>
                 </dependency>
 
-
-                <dependency>
-                    <groupId>io.undertow</groupId>
-                    <artifactId>undertow-core</artifactId>
-                </dependency>
-
                 <dependency>
                     <groupId>io.undertow</groupId>
                     <artifactId>undertow-servlet</artifactId>
@@ -1671,7 +1665,17 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
+                    <groupId>io.undertow</groupId>
+                    <artifactId>undertow-websockets-jsr</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>org.jboss.spec.javax.websocket</groupId>
+                    <artifactId>jboss-websocket-api_1.0_spec</artifactId>
+                </dependency>
+
+                <dependency>
+                <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-undertow</artifactId>
                 </dependency>
 
@@ -2062,7 +2066,7 @@
                                         <include>org.jboss.spec.javax.rmi:jboss-rmi-api_1.0_spec</include>
                                         <include>org.jboss.spec.javax.security.auth.message:jboss-jaspi-api_1.0_spec</include>
                                         <include>org.jboss.spec.javax.security.jacc:jboss-jacc-api_1.4_spec</include>
-                                        <include>org.jboss.spec.javax.servlet:jboss-servlet-api_3.0_spec</include>
+                                        <include>org.jboss.spec.javax.servlet:jboss-servlet-api_3.1_spec</include>
                                         <include>org.jboss.spec.javax.servlet.jsp:jboss-jsp-api_2.2_spec</include>
                                         <include>org.jboss.spec.javax.servlet.jstl:jboss-jstl-api_1.2_spec</include>
                                         <include>org.jboss.spec.javax.transaction:jboss-transaction-api_1.1_spec</include>

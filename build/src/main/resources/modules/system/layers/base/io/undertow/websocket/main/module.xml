@@ -22,27 +22,15 @@
   ~ 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   -->
 
-<module xmlns="urn:jboss:module:1.1" name="org.jboss.as.domain-http-interface">
-    <properties>
-        <property name="jboss.api" value="private"/>
-    </properties>
-
+<module xmlns="urn:jboss:module:1.1" name="io.undertow.websocket">
     <resources>
         <!-- Insert resources here -->
     </resources>
 
     <dependencies>
-        <module name="io.undertow.core"/>
-        <module name="org.jboss.as.security-util"/>
-        <module name="org.jboss.as.controller"/>
-        <module name="org.jboss.as.domain-management"/>
-        <module name="org.jboss.dmr"/>
-        <module name="org.jboss.logging"/>
-        <module name="org.jboss.modules"/>
-        <module name="org.jboss.sasl"/>
-        <module name="org.jboss.xnio"/>        
         <module name="javax.api"/>
+        <module name="org.jboss.logging"/>
+        <module name="io.undertow.core"/>
+        <module name="org.jboss.xnio"/>
     </dependencies>
-    
-    
 </module>

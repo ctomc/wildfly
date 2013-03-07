@@ -35,11 +35,11 @@
         <xs:attribute name="buffers-per-slice" use="optional" type="xs:int"/>
     </xs:complexType>
     <xs:complexType name="serverType">
-        <xs:choice>
-            <xs:element name="http-listener" type="http-listener-type" maxOccurs="1"/>
-            <xs:element name="ajp-listener" type="ajp-listener-type" maxOccurs="1"/>
+        <xs:sequence>
+            <xs:element name="http-listener" type="http-listener-type" minOccurs="0" maxOccurs="1"/>
+            <xs:element name="ajp-listener" type="ajp-listener-type" minOccurs="0" maxOccurs="1"/>
             <xs:element name="host" type="hostType" minOccurs="1" maxOccurs="unbounded"/>
-        </xs:choice>
+        </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="default-host" use="optional" type="xs:string"/>
         <xs:attribute name="servlet-container" use="optional" type="xs:string"/>
@@ -59,9 +59,9 @@
         <xs:attribute name="name" use="required" type="xs:string"/>
     </xs:complexType>
     <xs:complexType name="hostType">
-        <xs:choice>
+        <xs:sequence>
             <xs:element name="handlers" type="handlerType" maxOccurs="1" minOccurs="0"/>
-        </xs:choice>
+        </xs:sequence>
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="alias" use="optional" type="xs:string"/>
     </xs:complexType>
@@ -88,9 +88,9 @@
         <xs:attribute name="display-source-fragment" default="true" type="xs:boolean"/>
     </xs:complexType>
     <xs:complexType name="handlerType">
-        <xs:choice>
+        <xs:sequence>
             <xs:element name="file-error-page" type="file-error-page-type" minOccurs="0" maxOccurs="unbounded" />
-        </xs:choice>
+        </xs:sequence>
     </xs:complexType>
     <xs:complexType name="file-error-page-type">
         <xs:attribute name="code" use="required" type="xs:string"/>
