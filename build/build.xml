@@ -177,7 +177,7 @@
           ~ +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
           -->
 
-    	<module-def name="io.undertow">
+    	<module-def name="io.undertow.core">
             <maven-resource group="io.undertow" artifact="undertow-core"/>
         </module-def>
 

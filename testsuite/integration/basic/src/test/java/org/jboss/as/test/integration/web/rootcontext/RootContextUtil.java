@@ -66,9 +66,6 @@ public class RootContextUtil {
         op.get(OP_ADDR).add(SERVER, "default-server");
         op.get(OP_ADDR).add(HOST, virutalHost);
 
-        op.get("default-host").set("default-host");
-
-
         updates.add(op);
 
         applyUpdates(updates, client);
