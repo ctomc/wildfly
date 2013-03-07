@@ -28,7 +28,8 @@
     </resources>
 
     <dependencies>
-        <module name="io.undertow"/>
+        <module name="io.undertow.core"/>
+        <module name="io.undertow.servlet"/>
         <module name="sun.jdk"/>
         <module name="javax.annotation.api"/>
         <module name="javax.api"/>

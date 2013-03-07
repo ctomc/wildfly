@@ -1643,12 +1643,6 @@
                     <artifactId>jbossweb</artifactId>
                 </dependency>
 
-
-                <dependency>
-                    <groupId>io.undertow</groupId>
-                    <artifactId>undertow-core</artifactId>
-                </dependency>
-
                 <dependency>
                     <groupId>io.undertow</groupId>
                     <artifactId>undertow-servlet</artifactId>
