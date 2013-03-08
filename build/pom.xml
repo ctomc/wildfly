@@ -1654,7 +1654,17 @@
                 </dependency>
 
                 <dependency>
-                    <groupId>org.jboss.as</groupId>
+                    <groupId>io.undertow</groupId>
+                    <artifactId>undertow-websockets-jsr</artifactId>
+                </dependency>
+
+                <dependency>
+                    <groupId>javax.websocket</groupId>
+                    <artifactId>javax.websocket-api</artifactId>
+                </dependency>
+
+                <dependency>
+                <groupId>org.jboss.as</groupId>
                     <artifactId>jboss-as-undertow</artifactId>
                 </dependency>
 

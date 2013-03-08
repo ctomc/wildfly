@@ -1330,6 +1330,12 @@
             <maven-resource group="io.undertow.jastow" artifact="jastow"/>
             <maven-resource group="org.jboss.web" artifact="jasper-jdt"/>
         </module-def>
+        <module-def name="io.undertow.websocket">
+           <maven-resource group="io.undertow" artifact="undertow-websockets-jsr"/>
+         </module-def>
+        <module-def name="javax.websocket.api">
+              <maven-resource group="javax.websocket" artifact="javax.websocket-api"/>
+          </module-def>
 
     </target>
 
