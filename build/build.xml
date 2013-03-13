@@ -1334,7 +1334,7 @@
            <maven-resource group="io.undertow" artifact="undertow-websockets-jsr"/>
          </module-def>
         <module-def name="javax.websocket.api">
-              <maven-resource group="javax.websocket" artifact="javax.websocket-api"/>
+              <maven-resource group="org.jboss.spec.javax.websocket" artifact="jboss-websocket-api_1.0_spec"/>
           </module-def>
 
     </target>
