@@ -10,9 +10,9 @@
             <http-listener name="default" socket-binding="http"/>
             <?AJP?>
             <host name="default-host" alias="localhost">
-                <handlers>
-                    <file-error-page code="404" file="/my/error/page.html"/>
-                </handlers>
+                <location name="/">
+                    <file path="${jboss.home.dir}/welcome-content" cache-buffer-size="1024" cache-buffers="1024"/>
+                </location>
             </host>
         </server>
         <servlet-container name="default">
