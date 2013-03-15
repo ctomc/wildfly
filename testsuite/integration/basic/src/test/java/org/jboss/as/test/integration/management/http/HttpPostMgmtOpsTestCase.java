@@ -24,7 +24,6 @@ package org.jboss.as.test.integration.management.http;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
@@ -33,7 +32,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
 
-import com.arjuna.ats.internal.jdbc.drivers.modifiers.list;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.RunAsClient;
 import org.jboss.arquillian.junit.Arquillian;
@@ -60,7 +58,6 @@ public class HttpPostMgmtOpsTestCase {
 
     private static final int MGMT_PORT = 9990;
     private static final String MGMT_CTX = "/management";
-
     @ArquillianResource
     URL url;
     private HttpMgmtProxy httpMgmt;
@@ -83,7 +80,6 @@ public class HttpPostMgmtOpsTestCase {
         testReadResource(false);
     }
 
-
     @Test
     public void testReadResourceRecursive() throws Exception {
         testReadResource(true);
@@ -100,24 +96,19 @@ public class HttpPostMgmtOpsTestCase {
         ModelNode result = ret.get("result");
 
         assertTrue(result.has("server"));
-        ModelNode server = result.get("default-server");
+        ModelNode server = result.get("server");
 
 
-        assertTrue(server.has("host"));
-        ModelNode vServer = result.get("host");
-
-        assertTrue(vServer.has("default-host"));
-        ModelNode hosts = vServer.get("default-host");
-
-
-        assertTrue(hosts.has("default-host"));
-        ModelNode host = hosts.get("default-host");
-
-
+        assertTrue(server.has("default-server"));
+        ModelNode vServer = server.get("default-server");
         if (recursive) {
+            assertTrue(vServer.has("host"));
+            ModelNode hosts = vServer.get("host");
+
+            assertTrue(hosts.has("default-host"));
+            ModelNode host = hosts.get("default-host");
+
             assertTrue(host.has("alias"));
-        } else {
-            assertFalse(host.isDefined());
         }
 
     }
@@ -137,7 +128,6 @@ public class HttpPostMgmtOpsTestCase {
 
     }
 
-
     @Test
     public void testReadResourceDescription() throws Exception {
 
@@ -148,7 +138,6 @@ public class HttpPostMgmtOpsTestCase {
         assertTrue(result.has("description"));
         assertTrue(result.has("attributes"));
     }
-
 
     @Test
     public void testReadOperationNames() throws Exception {
@@ -210,8 +199,8 @@ public class HttpPostMgmtOpsTestCase {
     @Test
     public void testReadChildrenNames() throws Exception {
 
-        ModelNode op = httpMgmt.getOpNode("subsystem=undertow", "read-children-names");
-        op.get("child-type").set("connector");
+        ModelNode op = HttpMgmtProxy.getOpNode("subsystem=undertow", "read-children-names");
+        op.get("child-type").set("server");
 
         ModelNode ret = httpMgmt.sendPostCommand(op);
         assertTrue("success".equals(ret.get("outcome").asString()));
@@ -219,17 +208,17 @@ public class HttpPostMgmtOpsTestCase {
         ModelNode result = ret.get("result");
 
         List<ModelNode> names = result.asList();
-        Set<String> strNames = new TreeSet<String>();
+        Set<String> strNames = new TreeSet<>();
         for (ModelNode n : names) { strNames.add(n.asString()); }
 
-        assertTrue(strNames.contains("http"));
+        assertTrue(strNames.contains("default-server"));
 
     }
 
     @Test
     public void testReadChildrenResources() throws Exception {
 
-        ModelNode op = httpMgmt.getOpNode("subsystem=undertow", "read-children-resources");
+        ModelNode op = HttpMgmtProxy.getOpNode("subsystem=undertow", "read-children-resources");
         op.get("child-type").set("server");
 
         ModelNode ret = httpMgmt.sendPostCommand(op);
@@ -239,7 +228,6 @@ public class HttpPostMgmtOpsTestCase {
 
         assertTrue(result.has("default-server"));
     }
-
 
     @Test
     public void testAddRemoveOperation() throws Exception {
@@ -251,10 +239,8 @@ public class HttpPostMgmtOpsTestCase {
         ModelNode ret = httpMgmt.sendPostCommand(op);
         assertTrue("success".equals(ret.get("outcome").asString()));
 
-        op = httpMgmt.getOpNode("subsystem=undertow/connector=test-connector", "add");
+        op = httpMgmt.getOpNode("subsystem=undertow/server=default-server/http-listener=test-listener", "add");
         op.get("socket-binding").set("test");
-        op.get("scheme").set("http");
-        op.get("protocol").set("HTTP/1.1");
         op.get("enabled").set(true);
 
         ret = httpMgmt.sendPostCommand(op);
@@ -268,7 +254,7 @@ public class HttpPostMgmtOpsTestCase {
 
 
         // remove connector
-        ModelNode operation = HttpMgmtProxy.getOpNode("subsystem=web/connector=test-connector", "remove");
+        ModelNode operation = HttpMgmtProxy.getOpNode("subsystem=undertow/server=default-server/http-listener=test-listener", "remove");
         operation.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         ret = httpMgmt.sendPostCommand(operation);
         assertTrue("success".equals(ret.get("outcome").asString()));
