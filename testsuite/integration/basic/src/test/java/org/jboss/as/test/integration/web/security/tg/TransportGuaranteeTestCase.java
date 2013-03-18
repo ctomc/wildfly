@@ -43,7 +43,7 @@ import org.jboss.as.arquillian.api.ServerSetup;
 import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.test.categories.CommonCriteria;
 import org.jboss.as.test.http.util.HttpClientUtils;
-import org.jboss.as.test.integration.management.Connector;
+import org.jboss.as.test.integration.management.Listener;
 import org.jboss.as.test.integration.management.ServerManager;
 import org.jboss.as.test.integration.web.security.WebTestsSecurityDomainSetup;
 import org.jboss.logging.Logger;
@@ -163,7 +163,7 @@ public class TransportGuaranteeTestCase  {
         FileUtils.copyURLToFile(tccl.getResource("web/sec/tg/localhost.keystore"), keyStoreFile);
 
         try {
-            serverManager.addConnector(Connector.HTTPSJIO, httpsPort,
+            serverManager.addListener(Listener.HTTPSJIO, httpsPort,
                     null, null, keyStoreFile.getAbsolutePath(),
                     "password");
         } catch (Exception e) {
@@ -181,7 +181,7 @@ public class TransportGuaranteeTestCase  {
     @After
     public void tidyUpConfiguration() throws Exception {
         log.info("begin tidy up");
-        serverManager.removeConnector(Connector.HTTPSJIO, httpsTestURL);
+        serverManager.removeListener(Listener.HTTPSJIO, httpsTestURL);
     }
 
 

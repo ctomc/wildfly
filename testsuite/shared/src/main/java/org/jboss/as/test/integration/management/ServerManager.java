@@ -59,7 +59,7 @@ public class ServerManager extends AbstractMgmtTestBase {
         return managementClient.getControllerClient();
     }
 
-    public void addConnector(Connector conn, int port, String keyPEMFile, String certPEMFile, String keyStoreFile, String password) throws Exception {
+    public void addListener(Listener conn, int port, String keyPEMFile, String certPEMFile, String keyStoreFile, String password) throws Exception {
         // add socket binding
         ModelNode op = getAddSocketBindingOp(conn, port);
         executeOperation(op);
@@ -72,13 +72,13 @@ public class ServerManager extends AbstractMgmtTestBase {
         assertTrue(getConnectorList().contains("test-" + conn.getName() + "-connector"));
     }
 
-    private ModelNode getAddSocketBindingOp(Connector conn, int port) {
+    private ModelNode getAddSocketBindingOp(Listener conn, int port) {
         ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName(), "add");
         op.get("port").set(port);
         return op;
     }
 
-    private ModelNode getAddConnectorOp(Connector conn, String keyStoreFile, String password) {
+    private ModelNode getAddConnectorOp(Listener conn, String keyStoreFile, String password) {
         final ModelNode composite = Util.getEmptyOperation(COMPOSITE, new ModelNode());
         final ModelNode steps = composite.get(STEPS);
 
@@ -98,7 +98,7 @@ public class ServerManager extends AbstractMgmtTestBase {
         return composite;
     }
 
-    public void removeConnector(Connector conn, String checkURL) throws Exception {
+    public void removeListener(Listener conn, String checkURL) throws Exception {
         // remove connector
         ModelNode op = getRemoveConnectorOp(conn);
         executeOperation(op);
@@ -113,13 +113,13 @@ public class ServerManager extends AbstractMgmtTestBase {
         executeOperation(op);
     }
 
-    private ModelNode getRemoveSocketBindingOp(Connector conn) {
+    private ModelNode getRemoveSocketBindingOp(Listener conn) {
         ModelNode op = createOpNode("socket-binding-group=standard-sockets/socket-binding=test-" + conn.getName(), "remove");
         op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         return op;
     }
 
-    private ModelNode getRemoveConnectorOp(Connector conn) {
+    private ModelNode getRemoveConnectorOp(Listener conn) {
         ModelNode op = createOpNode("subsystem=web/connector=test-" + conn.getName() + "-connector", "remove");
         op.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         return op;
