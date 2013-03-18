@@ -26,8 +26,7 @@
     <xs:complexType name="workerType">
         <xs:attribute name="name" use="required" type="xs:string"/>
         <xs:attribute name="task-core-threads" use="optional" type="xs:int"/>
-        <xs:attribute name="write-threads" use="optional" type="xs:int"/>
-        <xs:attribute name="read-threads" use="optional" type="xs:int"/>
+        <xs:attribute name="io-threads" use="optional" type="xs:int"/>
     </xs:complexType>
     <xs:complexType name="bufferPoolType">
         <xs:attribute name="name" use="required" type="xs:string"/>
