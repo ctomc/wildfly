@@ -53,10 +53,10 @@
             <modules>
                 <module>smoke</module>
                 <module>basic</module>
-                <!--<module>osgi</module>
-                <module>clust</module>
+                <module>osgi</module>
                 <module>iiop</module>
-                <module>xts</module>-->
+                <module>xts</module>
+                <!--module>clust</module-->
                 <module>multinode</module>
                 <module>manualmode</module>
             </modules>
