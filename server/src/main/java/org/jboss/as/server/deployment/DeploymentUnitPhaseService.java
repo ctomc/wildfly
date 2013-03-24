@@ -24,6 +24,7 @@ package org.jboss.as.server.deployment;
 
 import static org.jboss.as.server.ServerLogger.DEPLOYMENT_LOGGER;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -58,7 +59,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     private static final AttachmentKey<AttachmentList<DeploymentUnit>> UNVISITED_DEFERRED_MODULES = AttachmentKey.createList(DeploymentUnit.class);
 
     private final InjectedValue<DeployerChains> deployerChainsInjector = new InjectedValue<DeployerChains>();
-    private DeploymentUnit deploymentUnit;
+    private final WeakReference<DeploymentUnit> deploymentUnit;
     private final Phase phase;
     private final AttachmentKey<T> valueKey;
     private final List<AttachedDependency> injectedAttachedDependencies = new ArrayList<AttachedDependency>();
@@ -70,7 +71,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     private final AtomicBoolean runOnce = new AtomicBoolean();
 
     private DeploymentUnitPhaseService(final DeploymentUnit deploymentUnit, final Phase phase, final AttachmentKey<T> valueKey) {
-        this.deploymentUnit = deploymentUnit;
+        this.deploymentUnit = new WeakReference<DeploymentUnit>(deploymentUnit);
         this.phase = phase;
         this.valueKey = valueKey;
     }
@@ -85,7 +86,8 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
 
     @SuppressWarnings("unchecked")
     public synchronized void start(final StartContext context) throws StartException {
-        boolean allowRestart = restartAllowed();
+        final DeploymentUnit deploymentUnit = this.deploymentUnit.get();
+        boolean allowRestart = restartAllowed(deploymentUnit);
         if(runOnce.get() && !allowRestart) {
             ServerLogger.DEPLOYMENT_LOGGER.deploymentRestartDetected(deploymentUnit.getName());
             //this only happens on deployment restart, which we don't support at the moment.
@@ -116,7 +118,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         }
         runOnce.set(true);
         final DeployerChains chains = deployerChainsInjector.getValue();
-        final DeploymentUnit deploymentUnit = this.deploymentUnit;
+
         final List<RegisteredDeploymentUnitProcessor> list = chains.getChain(phase);
         final ListIterator<RegisteredDeploymentUnitProcessor> iterator = list.listIterator();
         final ServiceContainer container = context.getController().getServiceContainer();
@@ -209,7 +211,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
         }
     }
 
-    private Boolean restartAllowed() {
+    private Boolean restartAllowed(DeploymentUnit deploymentUnit) {
         final DeploymentUnit parent;
         if (deploymentUnit.getParent() == null) {
             parent = deploymentUnit;
@@ -221,7 +223,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     }
 
     public synchronized void stop(final StopContext context) {
-        final DeploymentUnit deploymentUnitContext = deploymentUnit;
+        final DeploymentUnit deploymentUnitContext = deploymentUnit.get();
         final DeployerChains chains = deployerChainsInjector.getValue();
         final List<RegisteredDeploymentUnitProcessor> list = chains.getChain(phase);
         final ListIterator<RegisteredDeploymentUnitProcessor> iterator = list.listIterator(list.size());
@@ -229,7 +231,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             final RegisteredDeploymentUnitProcessor prev = iterator.previous();
             safeUndeploy(deploymentUnitContext, phase, prev);
         }
-        deploymentUnit = null;
+        //deploymentUnit = null;
     }
 
     private Mode getDeferableInitialMode(final DeploymentUnit deploymentUnit, List<String> deferredModules) {
@@ -256,7 +258,7 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
             }
         } else {
             // Make the non-deferred sibling PASSIVE if it is not the last to visit
-            List<DeploymentUnit> unvisited = parent.getAttachmentList(UNVISITED_DEFERRED_MODULES);
+            final List<DeploymentUnit> unvisited = parent.getAttachmentList(UNVISITED_DEFERRED_MODULES);
             synchronized (unvisited) {
                 unvisited.remove(deploymentUnit);
                 if (!deferredModules.isEmpty() || !unvisited.isEmpty()) {
@@ -278,7 +280,8 @@ final class DeploymentUnitPhaseService<T> implements Service<T> {
     }
 
     public synchronized T getValue() throws IllegalStateException, IllegalArgumentException {
-        return deploymentUnit.getAttachment(valueKey);
+        DeploymentUnit du = deploymentUnit.get();
+        return du != null ? du.getAttachment(valueKey) : null;
     }
 
     InjectedValue<DeployerChains> getDeployerChainsInjector() {
