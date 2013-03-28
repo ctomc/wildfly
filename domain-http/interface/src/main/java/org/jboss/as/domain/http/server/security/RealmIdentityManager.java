@@ -243,7 +243,11 @@ public class RealmIdentityManager implements IdentityManager {
         }
 
         @Override
-        public boolean isUserInGroup(String group) {
+<<<<<<< Updated upstream
+        public boolean isUserInRole(String role) {
+=======
+        public boolean isUserInRole(String group) {
+>>>>>>> Stashed changes
             // TODO - Not really used for domains yet.
             return false;
         }
