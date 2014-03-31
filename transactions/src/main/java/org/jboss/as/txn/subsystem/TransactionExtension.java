@@ -44,7 +44,6 @@ import org.jboss.as.controller.parsing.ExtensionParsingContext;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.services.path.ResolvePathHandler;
 import org.jboss.as.controller.transform.TransformationContext;
-import org.jboss.as.controller.transform.description.AttributeConverter;
 import org.jboss.as.controller.transform.description.DiscardAttributeChecker;
 import org.jboss.as.controller.transform.description.RejectAttributeChecker;
 import org.jboss.as.controller.transform.description.ResourceTransformationDescriptionBuilder;
@@ -176,9 +175,9 @@ public class TransactionExtension implements Extension {
                         TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 .addRejectCheck(RejectHornetQStoreAsyncIOChecker.INSTANCE, TransactionSubsystemRootResourceDefinition.HORNETQ_STORE_ENABLE_ASYNC_IO)
                 // Legacy name for enabling/disabling statistics
-                .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS)
+                .addRename(TransactionSubsystemRootResourceDefinition.STATISTICS_ENABLED, CommonAttributes.ENABLE_STATISTICS);
                 //Before 2.0.0 this value was not nillable in practise. Set it to 'false' if undefined.
-                .setValueConverter(ProcessIdUuidConverter.INSTANCE, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID);
+                //.setValueConverter(ProcessIdUuidConverter.INSTANCE, TransactionSubsystemRootResourceDefinition.PROCESS_ID_UUID);
 
 
         final ModelVersion version120 = ModelVersion.create(1, 2, 0);
@@ -300,16 +299,4 @@ public class TransactionExtension implements Extension {
             return false;
         }
     }
-
-    private static class ProcessIdUuidConverter extends AttributeConverter.DefaultAttributeConverter {
-        static final ProcessIdUuidConverter INSTANCE = new ProcessIdUuidConverter();
-        @Override
-        protected void convertAttribute(PathAddress address, String attributeName, ModelNode attributeValue, TransformationContext context) {
-            if (!attributeValue.isDefined()){
-                attributeValue.set(false);
-            }
-        }
-
-    }
-
 }

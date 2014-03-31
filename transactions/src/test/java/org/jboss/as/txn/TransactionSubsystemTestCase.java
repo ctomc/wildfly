@@ -47,6 +47,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
@@ -59,6 +60,7 @@ import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelFixer;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
+import org.jboss.as.model.test.OperationFixer;
 import org.jboss.as.model.test.SingleClassFilter;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
 import org.jboss.as.subsystem.test.AdditionalInitialization;
@@ -154,10 +156,8 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         // Add legacy subsystems
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
             .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
-            .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
-            .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class))
-            .addOperationValidationFixer(ADD, subsystemAddress, RemoveProcessUUIDOperationFixer.INSTANCE)
-            .addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class);
+            .addMavenResourceURL("org.jboss.as:jboss-as-controller:" + controllerVersion.getMavenGavVersion())
+            .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE);
 
 
         KernelServices mainServices = builder.build();
@@ -214,7 +214,6 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL("org.jboss.as:jboss-as-transactions:" + controllerVersion.getMavenGavVersion())
                 .addOperationValidationResolve(ADD, subsystemAddress)
-                .addOperationValidationFixer(ADD, subsystemAddress, RemoveProcessUUIDOperationFixer.INSTANCE)
                 .configureReverseControllerCheck(AdditionalInitialization.MANAGEMENT, ADD_REMOVED_HORNETQ_STORE_ENABLE_ASYNC_IO, RemoveProcessUUIDOperationFixer.INSTANCE)
                 .addSingleChildFirstClass(RemoveProcessUUIDOperationFixer.class)
                 .excludeFromParent(SingleClassFilter.createFilter(TransactionLogger.class));
@@ -359,5 +358,25 @@ public class TransactionSubsystemTestCase extends AbstractSubsystemBaseTest {
             return new ModelNode(true);
         }
 
+    }
+
+    /**
+     *
+     * @author <a href="mailto:kabir.khan@jboss.com">Kabir Khan</a>
+     */
+    static class RemoveProcessUUIDOperationFixer implements OperationFixer, Serializable {
+        private static final long serialVersionUID = 1L;
+        static transient final RemoveProcessUUIDOperationFixer INSTANCE = new RemoveProcessUUIDOperationFixer();
+
+        private RemoveProcessUUIDOperationFixer(){
+        }
+
+        @Override
+        public ModelNode fixOperation(ModelNode operation) {
+            if (operation.hasDefined("process-id-uuid") && operation.get("process-id-uuid").asString() == "false"){
+                operation.remove("process-id-uuid");
+            }
+            return operation;
+        }
     }
 }
