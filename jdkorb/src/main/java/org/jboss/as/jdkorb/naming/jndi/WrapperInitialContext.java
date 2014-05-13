@@ -32,6 +32,8 @@ import javax.naming.NameParser;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 
+import com.sun.corba.se.impl.orbutil.ORBConstants;
+
 /**
  * @author Stuart Douglas
  */
@@ -60,7 +62,11 @@ public class WrapperInitialContext implements Context {
                 final String server = name.substring(0, index);
                 final String lookup = name.substring(index + 1);
                 final Hashtable environment = (Hashtable) this.environment.clone();
+
                 environment.put(Context.PROVIDER_URL, server);
+                environment.put(ORBConstants.ORB_SERVER_ID_PROPERTY, "1");
+
+
                 return CNCtxFactory.INSTANCE.getInitialContext(environment).lookup(lookup);
             } else {
                 return CNCtxFactory.INSTANCE.getInitialContext(environment).lookup(name);
