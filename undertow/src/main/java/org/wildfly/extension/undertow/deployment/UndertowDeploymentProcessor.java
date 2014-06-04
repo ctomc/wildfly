@@ -374,9 +374,7 @@ public class UndertowDeploymentProcessor implements DeploymentUnitProcessor {
             }
         } else {
             pathName = metaData.getContextRoot();
-            if ("/".equals(pathName)) {
-                pathName = "";
-            } else if (pathName.length() > 0 && pathName.charAt(0) != '/') {
+            if (pathName.length() > 0 && pathName.charAt(0) != '/') {
                 pathName = "/" + pathName;
             }
         }

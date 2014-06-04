@@ -479,7 +479,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
      */
     private String resolveContextPath() {
         if (deploymentName.equals(host.getValue().getDefaultWebModule())) {
-            return "";
+            return "/";
         } else {
             return contextPath;
         }
