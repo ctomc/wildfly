@@ -81,6 +81,13 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
             .setAllowExpression(false)
             .build();
 
+    protected static final SimpleAttributeDefinition PEER_HOST_LOOKUP = new SimpleAttributeDefinitionBuilder("peer-host-lookup", ModelType.BOOLEAN)
+            .setAllowNull(true)
+            .setFlags(AttributeAccess.Flag.RESTART_RESOURCE_SERVICES)
+            .setDefaultValue(new ModelNode(false))
+            .setAllowExpression(true)
+            .build();
+
 
     public static final OptionAttributeDefinition BACKLOG = OptionAttributeDefinition.builder("tcp-backlog", Options.BACKLOG).setAllowExpression(true).build();
     public static final OptionAttributeDefinition RECEIVE_BUFFER = OptionAttributeDefinition.builder("receive-buffer", Options.RECEIVE_BUFFER).setAllowExpression(true).build();
@@ -116,7 +123,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
     public static final List<OptionAttributeDefinition> SOCKET_OPTIONS = Arrays.asList(BACKLOG, RECEIVE_BUFFER, SEND_BUFFER, KEEP_ALIVE, READ_TIMEOUT, WRITE_TIMEOUT);
 
     static {
-        ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED));
+        ATTRIBUTES = new LinkedHashSet<AttributeDefinition>(Arrays.asList(SOCKET_BINDING, WORKER, BUFFER_POOL, ENABLED, PEER_HOST_LOOKUP));
 
         ATTRIBUTES.addAll(LISTENER_OPTIONS);
 
