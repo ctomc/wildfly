@@ -56,6 +56,7 @@ public class JdkORBSubsystemParser implements XMLStreamConstants, XMLElementRead
         xmlDescription = builder(JdkORBRootDefinition.INSTANCE)
                 .addChild(
                         builder(ORBDefinition.INSTANCE)
+                                .setXmlElementName("orb")
                                 .addAttributes(ORBDefinition.PERSISTENT_SERVER_ID, ORBDefinition.GIOP_VERSION,
                                         ORBDefinition.SOCKET_BINDING,ORBDefinition.SSL_SOCKET_BINDING)
                                 .addChild(
@@ -64,45 +65,49 @@ public class JdkORBSubsystemParser implements XMLStreamConstants, XMLElementRead
                                         )
                                  .addChild(
                                          builder(InitializersDefinition.INSTANCE)
+                                                 .setXmlElementName("initializers")
                                              .addAttributes(InitializersDefinition.SECURITY,InitializersDefinition.TRANSACTIONS)
                                          )
+                        
                         )
-//                .addChild(
-//                        builder(NamingDefinition.INSTANCE)
-//                            .addAttributes(NamingDefinition.EXPORT_CORBALOC,NamingDefinition.ROOT_CONTEXT)
-//                        )
-//                .addChild(
-//                        builder(SecurityDefinition.INSTANCE)
-//                            .addAttributes(SecurityDefinition.SUPPORT_SSL,SecurityDefinition.SECURITY_DOMAIN,
-//                                    SecurityDefinition.ADD_COMPONENT_INTERCEPTOR,SecurityDefinition.CLIENT_SUPPORTS,
-//                                    SecurityDefinition.CLIENT_REQUIRES,SecurityDefinition.SERVER_SUPPORTS,
-//                                    SecurityDefinition.SERVER_REQUIRES)
-//                        )
-//                .addChild(
-//                        builder(IORSettingsDefinition.INSTANCE)
-//                        .setXmlElementName(JdkORBSubsystemConstants.IOR_SETTINGS)
-//                        .addChild(builder(IORTransportConfigDefinition.INSTANCE)
-//                                .addAttribute(IORTransportConfigDefinition.INTEGRITY)
-//                                .addAttribute(IORTransportConfigDefinition.CONFIDENTIALITY)
-//                                .addAttribute(IORTransportConfigDefinition.TRUST_IN_CLIENT)
-//                                .addAttribute(IORTransportConfigDefinition.TRUST_IN_TARGET)
-//                                .addAttribute(IORTransportConfigDefinition.DETECT_REPLAY)
-//                                .addAttribute(IORTransportConfigDefinition.DETECT_MISORDERING)
-//                                )
-//                        .addChild(builder(IORASContextDefinition.INSTANCE)
-//                                .addAttribute(IORASContextDefinition.AUTH_METHOD)
-//                                .addAttribute(IORASContextDefinition.REALM)
-//                                .addAttribute(IORASContextDefinition.REQUIRED)
-//                                )
-//                        .addChild(builder(IORSASContextDefinition.INSTANCE)
-//                                .addAttribute(IORSASContextDefinition.CALLER_PROPAGATION)
-//                                )
-//                        )
-//                .addChild(
-//                        builder(ClientTransportDefinition.INSTANCE)
-//                        .setXmlElementName(JdkORBSubsystemConstants.CLIENT_TRANSPORT)
-//                        .addAttribute(ClientTransportDefinition.REQUIRES_SSL)
-//                        )
+                .addChild(
+                        builder(NamingDefinition.INSTANCE)
+                                .setXmlElementName("naming")
+                            .addAttributes(NamingDefinition.EXPORT_CORBALOC,NamingDefinition.ROOT_CONTEXT)
+                        )
+                .addChild(
+                        builder(SecurityDefinition.INSTANCE)
+                                .setXmlElementName("security")
+                            .addAttributes(SecurityDefinition.SUPPORT_SSL,SecurityDefinition.SECURITY_DOMAIN,
+                                    SecurityDefinition.ADD_COMPONENT_INTERCEPTOR,SecurityDefinition.CLIENT_SUPPORTS,
+                                    SecurityDefinition.CLIENT_REQUIRES,SecurityDefinition.SERVER_SUPPORTS,
+                                    SecurityDefinition.SERVER_REQUIRES)
+                        )
+                .addChild(
+                        builder(IORSettingsDefinition.INSTANCE)
+                        .setXmlElementName(JdkORBSubsystemConstants.IOR_SETTINGS)
+                        .addChild(builder(IORTransportConfigDefinition.INSTANCE)
+                                .addAttribute(IORTransportConfigDefinition.INTEGRITY)
+                                .addAttribute(IORTransportConfigDefinition.CONFIDENTIALITY)
+                                .addAttribute(IORTransportConfigDefinition.TRUST_IN_CLIENT)
+                                .addAttribute(IORTransportConfigDefinition.TRUST_IN_TARGET)
+                                .addAttribute(IORTransportConfigDefinition.DETECT_REPLAY)
+                                .addAttribute(IORTransportConfigDefinition.DETECT_MISORDERING)
+                                )
+                        .addChild(builder(IORASContextDefinition.INSTANCE)
+                                .addAttribute(IORASContextDefinition.AUTH_METHOD)
+                                .addAttribute(IORASContextDefinition.REALM)
+                                .addAttribute(IORASContextDefinition.REQUIRED)
+                                )
+                        .addChild(builder(IORSASContextDefinition.INSTANCE)
+                                .addAttribute(IORSASContextDefinition.CALLER_PROPAGATION)
+                                )
+                        )
+                .addChild(
+                        builder(ClientTransportDefinition.INSTANCE)
+                        .setXmlElementName(JdkORBSubsystemConstants.CLIENT_TRANSPORT)
+                        .addAttribute(ClientTransportDefinition.REQUIRES_SSL)
+                        )
                 .build();
     }
 

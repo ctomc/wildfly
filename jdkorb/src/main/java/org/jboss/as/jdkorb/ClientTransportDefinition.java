@@ -63,7 +63,7 @@ class ClientTransportDefinition extends PersistentResourceDefinition {
     static final ClientTransportDefinition INSTANCE = new ClientTransportDefinition();
 
     private ClientTransportDefinition() {
-        super(PathElement.pathElement(JdkORBSubsystemConstants.CLIENT_TRANSPORT),
+        super(JdkORBExtension.PATH_CLIENT_TRANSPORT,
                 JdkORBExtension.getResourceDescriptionResolver(JdkORBSubsystemConstants.CLIENT_TRANSPORT),
                 new AbstractAddStepHandler(ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);

@@ -27,7 +27,7 @@ class IORSettingsDefinition extends PersistentResourceDefinition {
                     IORSASContextDefinition.INSTANCE));
 
     private IORSettingsDefinition() {
-        super(PathElement.pathElement(JdkORBSubsystemConstants.IOR_SETTINGS),
+        super(PathElement.pathElement(JdkORBSubsystemConstants.IOR_SETTINGS,"default"),
                 JdkORBExtension.getResourceDescriptionResolver(JdkORBSubsystemConstants.IOR_SETTINGS),
                 new AbstractAddStepHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
     }

@@ -22,6 +22,8 @@
 
 package org.jboss.as.jdkorb;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.jboss.as.controller.AttributeDefinition;
@@ -29,9 +31,9 @@ import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.OperationStepHandler;
 import org.jboss.as.controller.PathElement;
+import org.jboss.as.controller.PersistentResourceDefinition;
 import org.jboss.as.controller.ReloadRequiredRemoveStepHandler;
 import org.jboss.as.controller.ReloadRequiredWriteAttributeHandler;
-import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.registry.ManagementResourceRegistration;
 import org.jboss.as.controller.registry.Resource;
@@ -41,7 +43,7 @@ import org.jboss.dmr.ModelNode;
  * @author Tomaz Cerar
  * @created 6.1.12 23:00
  */
-public class JdkORBSubsystemResource extends SimpleResourceDefinition {
+public class JdkORBSubsystemResource extends PersistentResourceDefinition {
     public static final JdkORBSubsystemResource INSTANCE = new JdkORBSubsystemResource();
 
 
@@ -62,11 +64,15 @@ public class JdkORBSubsystemResource extends SimpleResourceDefinition {
     }
 
     @Override
-    public void registerChildren(final ManagementResourceRegistration resourceRegistration) {
-        super.registerChildren(resourceRegistration);
-        resourceRegistration.registerSubModel(IORSettingsDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(ClientTransportDefinition.INSTANCE);
+    public Collection<AttributeDefinition> getAttributes() {
+        return JdkORBSubsystemDefinitions.SUBSYSTEM_ATTRIBUTES;
     }
+
+    @Override
+    protected List<? extends PersistentResourceDefinition> getChildren() {
+        return Arrays.asList(ORBDefinition.INSTANCE, IORSettingsDefinition.INSTANCE, ClientTransportDefinition.INSTANCE);
+    }
+
 
     private static class JdkorbReloadRequiredWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {
         public JdkorbReloadRequiredWriteAttributeHandler(List<AttributeDefinition> definitions) {

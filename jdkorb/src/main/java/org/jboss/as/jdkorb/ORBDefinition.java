@@ -60,8 +60,6 @@ public class ORBDefinition extends PersistentResourceDefinition {
             .setDefaultValue(new ModelNode().set("jdkorb-ssl")).setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
             .addAccessConstraint(SensitiveTargetAccessConstraintDefinition.SOCKET_BINDING_REF).build();
 
-    static final ORBDefinition INSTANCE = new ORBDefinition();
-
     private static final List<SimpleAttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
             PERSISTENT_SERVER_ID, GIOP_VERSION, SOCKET_BINDING, SSL_SOCKET_BINDING));
 
@@ -69,9 +67,12 @@ public class ORBDefinition extends PersistentResourceDefinition {
         TCPDefinition.INSTANCE, InitializersDefinition.INSTANCE
     };
 
+    static final ORBDefinition INSTANCE = new ORBDefinition();
+
+
     private ORBDefinition() {
         super(JdkORBExtension.PATH_ORB, JdkORBExtension.getResourceDescriptionResolver(JdkORBSubsystemConstants.ORB),
-                new AbstractAddStepHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
+                new AbstractAddStepHandler(ATTRIBUTES), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
     @Override

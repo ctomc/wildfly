@@ -47,10 +47,10 @@ public class JdkORBExtension implements Extension {
     public static final String SUBSYSTEM_NAME = "jdkorb";
 
     protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
-    protected static final PathElement PATH_ORB = PathElement.pathElement(JdkORBSubsystemConstants.ORB,
-            JdkORBSubsystemConstants.ORB);
+    protected static final PathElement PATH_ORB = PathElement.pathElement(JdkORBSubsystemConstants.ORB , "default");
     protected static final PathElement PATH_TCP = PathElement.pathElement(JdkORBSubsystemConstants.ORB_TCP,
             JdkORBSubsystemConstants.ORB_TCP);
+    protected static final PathElement PATH_INITILIZERS = PathElement.pathElement("initializers", "default" );
     protected static final PathElement PATH_NAMING = PathElement.pathElement(JdkORBSubsystemConstants.NAMING,
             JdkORBSubsystemConstants.DEFAULT);
     protected static final PathElement PATH_SECURITY = PathElement.pathElement(JdkORBSubsystemConstants.SECURITY,

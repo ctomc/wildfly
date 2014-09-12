@@ -67,13 +67,13 @@ public class InitializersDefinition extends PersistentResourceDefinition {
             .setAllowExpression(true)
             .build();
 
-    static final InitializersDefinition INSTANCE = new InitializersDefinition();
-
     private static final List<SimpleAttributeDefinition> ATTRIBUTES = Collections.unmodifiableList(Arrays.asList(
             SECURITY, TRANSACTIONS));
 
+    static final InitializersDefinition INSTANCE = new InitializersDefinition();
+
     private InitializersDefinition() {
-        super(JdkORBExtension.PATH_ORB, JdkORBExtension.getResourceDescriptionResolver(JdkORBSubsystemConstants.ORB,
+        super(JdkORBExtension.PATH_INITILIZERS, JdkORBExtension.getResourceDescriptionResolver(JdkORBSubsystemConstants.ORB,
                 JdkORBSubsystemConstants.ORB_INIT), new AbstractAddStepHandler(), ReloadRequiredRemoveStepHandler.INSTANCE);
     }
 
