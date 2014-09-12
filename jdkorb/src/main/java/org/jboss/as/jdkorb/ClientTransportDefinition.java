@@ -48,7 +48,7 @@ import org.jboss.metadata.ejb.jboss.ClientTransportConfigMetaData;
  *
  * @author <a href="mailto:tadamski@redhat.com">Tomasz Adamski</a>
  */
-class ClientTransportConfigDefinition extends PersistentResourceDefinition {
+class ClientTransportDefinition extends PersistentResourceDefinition {
 
 
     static final AttributeDefinition REQUIRES_SSL =
@@ -60,11 +60,11 @@ class ClientTransportConfigDefinition extends PersistentResourceDefinition {
 
     static final Collection<AttributeDefinition> ATTRIBUTES = Arrays.asList(REQUIRES_SSL);
 
-    static final ClientTransportConfigDefinition INSTANCE = new ClientTransportConfigDefinition();
+    static final ClientTransportDefinition INSTANCE = new ClientTransportDefinition();
 
-    private ClientTransportConfigDefinition() {
-        super(PathElement.pathElement(JdkORBSubsystemConstants.CLIENT_TRANSPORT_CONFIG, JdkORBSubsystemConstants.DEFAULT),
-                JdkORBExtension.getResourceDescriptionResolver(JdkORBSubsystemConstants.CLIENT_TRANSPORT_CONFIG),
+    private ClientTransportDefinition() {
+        super(PathElement.pathElement(JdkORBSubsystemConstants.CLIENT_TRANSPORT),
+                JdkORBExtension.getResourceDescriptionResolver(JdkORBSubsystemConstants.CLIENT_TRANSPORT),
                 new AbstractAddStepHandler(ATTRIBUTES),
                 ReloadRequiredRemoveStepHandler.INSTANCE);
     }

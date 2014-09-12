@@ -44,6 +44,7 @@ import org.jboss.dmr.ModelNode;
 public class JdkORBSubsystemResource extends SimpleResourceDefinition {
     public static final JdkORBSubsystemResource INSTANCE = new JdkORBSubsystemResource();
 
+
     private JdkORBSubsystemResource() {
         super(PathElement.pathElement(ModelDescriptionConstants.SUBSYSTEM, JdkORBExtension.SUBSYSTEM_NAME),
                 JdkORBExtension.getResourceDescriptionResolver(),
@@ -64,7 +65,7 @@ public class JdkORBSubsystemResource extends SimpleResourceDefinition {
     public void registerChildren(final ManagementResourceRegistration resourceRegistration) {
         super.registerChildren(resourceRegistration);
         resourceRegistration.registerSubModel(IORSettingsDefinition.INSTANCE);
-        resourceRegistration.registerSubModel(ClientTransportConfigDefinition.INSTANCE);
+        resourceRegistration.registerSubModel(ClientTransportDefinition.INSTANCE);
     }
 
     private static class JdkorbReloadRequiredWriteAttributeHandler extends ReloadRequiredWriteAttributeHandler {

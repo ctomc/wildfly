@@ -242,7 +242,7 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
 
         ClientTransportConfigMetaData clientTransportConfigMetaData = null;
         clientTransportConfigMetaData = this.createClientTransportConfigMetaData(context,
-                model.get(ClientTransportConfigDefinition.INSTANCE.getPathElement().getKeyValuePair()));
+                model.get(ClientTransportDefinition.INSTANCE.getPathElement().getKeyValuePair()));
         CSIV2IORToSocketInfo.setClientTransportConfigMetaData(clientTransportConfigMetaData);
     }
 
@@ -368,7 +368,7 @@ public class JdkORBSubsystemAdd extends AbstractAddStepHandler {
 
     private ClientTransportConfigMetaData createClientTransportConfigMetaData(final OperationContext context, final ModelNode node)
             throws OperationFailedException {
-        final ClientTransportConfigMetaData clientTransportConfigMetaData = ClientTransportConfigDefinition.INSTANCE.getTransportConfigMetaData(
+        final ClientTransportConfigMetaData clientTransportConfigMetaData = ClientTransportDefinition.INSTANCE.getTransportConfigMetaData(
                 context, node);
         return clientTransportConfigMetaData;
     }

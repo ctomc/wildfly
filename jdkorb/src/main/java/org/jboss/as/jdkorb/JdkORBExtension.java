@@ -22,8 +22,11 @@
 
 package org.jboss.as.jdkorb;
 
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+
 import org.jboss.as.controller.Extension;
 import org.jboss.as.controller.ExtensionContext;
+import org.jboss.as.controller.PathElement;
 import org.jboss.as.controller.SubsystemRegistration;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.descriptions.StandardResourceDescriptionResolver;
@@ -41,9 +44,21 @@ import org.jboss.as.controller.registry.ManagementResourceRegistration;
  */
 public class JdkORBExtension implements Extension {
 
-    private static final JdkORBSubsystemParser PARSER = JdkORBSubsystemParser.INSTANCE;
-
     public static final String SUBSYSTEM_NAME = "jdkorb";
+
+    protected static final PathElement SUBSYSTEM_PATH = PathElement.pathElement(SUBSYSTEM, SUBSYSTEM_NAME);
+    protected static final PathElement PATH_ORB = PathElement.pathElement(JdkORBSubsystemConstants.ORB,
+            JdkORBSubsystemConstants.ORB);
+    protected static final PathElement PATH_TCP = PathElement.pathElement(JdkORBSubsystemConstants.ORB_TCP,
+            JdkORBSubsystemConstants.ORB_TCP);
+    protected static final PathElement PATH_NAMING = PathElement.pathElement(JdkORBSubsystemConstants.NAMING,
+            JdkORBSubsystemConstants.DEFAULT);
+    protected static final PathElement PATH_SECURITY = PathElement.pathElement(JdkORBSubsystemConstants.SECURITY,
+            JdkORBSubsystemConstants.DEFAULT);
+    protected static final PathElement PATH_IOR_SETTINGS = PathElement.pathElement(JdkORBSubsystemConstants.IOR_SETTINGS,
+            JdkORBSubsystemConstants.DEFAULT);
+    protected static final PathElement PATH_CLIENT_TRANSPORT = PathElement.pathElement(
+            JdkORBSubsystemConstants.CLIENT_TRANSPORT, JdkORBSubsystemConstants.DEFAULT);
 
     private static final String RESOURCE_NAME = JdkORBExtension.class.getPackage().getName() + ".LocalDescriptions";
 
@@ -66,11 +81,11 @@ public class JdkORBExtension implements Extension {
                 MANAGEMENT_API_MINOR_VERSION, MANAGEMENT_API_MICRO_VERSION);
         final ManagementResourceRegistration subsystemRegistration = subsystem.registerSubsystemModel(JdkORBSubsystemResource.INSTANCE);
         subsystemRegistration.registerOperationHandler(GenericSubsystemDescribeHandler.DEFINITION, GenericSubsystemDescribeHandler.INSTANCE);
-        subsystem.registerXMLElementWriter(PARSER);
+        subsystem.registerXMLElementWriter(JdkORBSubsystemParser.INSTANCE);
     }
 
     @Override
     public void initializeParsers(ExtensionParsingContext context) {
-        context.setSubsystemXmlMapping(SUBSYSTEM_NAME, JdkORBSubsystemParser.Namespace.JdkORB_1_0.getUriString(), PARSER);
+        context.setSubsystemXmlMapping(SUBSYSTEM_NAME,Namespace.JdkORB_1_0.getUriString(), JdkORBSubsystemParser.INSTANCE);
     }
 }

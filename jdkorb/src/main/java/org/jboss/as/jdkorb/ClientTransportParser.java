@@ -48,9 +48,9 @@ class ClientTransportParser implements XMLStreamConstants, XMLElementReader<List
 
     static final ClientTransportParser INSTANCE = new ClientTransportParser();
 
-    static final PersistentResourceXMLDescription xmlDescription = builder(ClientTransportConfigDefinition.INSTANCE)
-            .setXmlElementName(JdkORBSubsystemConstants.CLIENT_TRANSPORT_CONFIG)
-            .addAttribute(ClientTransportConfigDefinition.REQUIRES_SSL)
+    static final PersistentResourceXMLDescription xmlDescription = builder(ClientTransportDefinition.INSTANCE)
+            .setXmlElementName(JdkORBSubsystemConstants.CLIENT_TRANSPORT)
+            .addAttribute(ClientTransportDefinition.REQUIRES_SSL)
             .build();
 
     private ClientTransportParser() {
@@ -64,7 +64,7 @@ class ClientTransportParser implements XMLStreamConstants, XMLElementReader<List
     @Override
     public void writeContent(final XMLExtendedStreamWriter xmlExtendedStreamWriter, final ModelNode modelNode) throws XMLStreamException {
         ModelNode model = new ModelNode();
-        model.get(ClientTransportConfigDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(modelNode);
+        model.get(ClientTransportDefinition.INSTANCE.getPathElement().getKeyValuePair()).set(modelNode);
         xmlDescription.persist(xmlExtendedStreamWriter, model);
     }
 }
