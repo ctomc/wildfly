@@ -29,21 +29,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
 
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.as.cli.CommandContext;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.util.CLITestUtil;
 import org.jboss.as.test.integration.management.util.SimpleServlet;
 import org.jboss.as.test.shared.TestSuiteEnvironment;
-import org.jboss.shrinkwrap.api.Archive;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.asset.StringAsset;
 import org.jboss.shrinkwrap.api.exporter.ZipExporter;
 import org.jboss.shrinkwrap.api.spec.EnterpriseArchive;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.shrinkwrap.impl.base.exporter.zip.ZipExporterImpl;
 import org.jboss.shrinkwrap.impl.base.path.BasicPath;
@@ -51,26 +45,18 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * @author btison
  *
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class ArchiveTestCase {
 
     private static File cliArchiveFile;
 
-    @ArquillianResource URL url;
-
-    @Deployment
-    public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(ArchiveTestCase.class);
-        return ja;
-    }
-
+    
     @BeforeClass
     public static void before() throws Exception {
         String tempDir = TestSuiteEnvironment.getTmpDir();
@@ -117,17 +103,17 @@ public class ArchiveTestCase {
             ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=install.scr");
 
             // check that now both wars are deployed
-            String response = HttpRequest.get(getBaseURL(url) + "deployment0/SimpleServlet", 10, TimeUnit.SECONDS);
+            String response = HttpRequest.get(getBaseURL() + "deployment0/SimpleServlet", 10, TimeUnit.SECONDS);
             assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
-            response = HttpRequest.get(getBaseURL(url) + "deployment1/SimpleServlet", 10, TimeUnit.SECONDS);
+            response = HttpRequest.get(getBaseURL() + "deployment1/SimpleServlet", 10, TimeUnit.SECONDS);
             assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
-            assertTrue(checkUndeployed(getBaseURL(url) + "deployment2/SimpleServlet"));
+            assertTrue(checkUndeployed(getBaseURL() + "deployment2/SimpleServlet"));
 
             ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=uninstall.scr");
 
             // check that both wars are undeployed
-            assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));
-            assertTrue(checkUndeployed(getBaseURL(url) + "deployment1/SimpleServlet"));
+            assertTrue(checkUndeployed(getBaseURL() + "deployment0/SimpleServlet"));
+            assertTrue(checkUndeployed(getBaseURL() + "deployment1/SimpleServlet"));
         } finally {
             ctx.terminateSession();
         }
@@ -142,16 +128,16 @@ public class ArchiveTestCase {
             ctx.handle("deploy " + cliArchiveFile.getAbsolutePath() + " --script=install.scr");
 
             // check that now both wars are deployed
-            String response = HttpRequest.get(getBaseURL(url) + "deployment0/SimpleServlet", 10, TimeUnit.SECONDS);
+            String response = HttpRequest.get(getBaseURL() + "deployment0/SimpleServlet", 10, TimeUnit.SECONDS);
             assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
-            response = HttpRequest.get(getBaseURL(url) + "deployment1/SimpleServlet", 10, TimeUnit.SECONDS);
+            response = HttpRequest.get(getBaseURL() + "deployment1/SimpleServlet", 10, TimeUnit.SECONDS);
             assertTrue("Invalid response: " + response, response.indexOf("SimpleServlet") >=0);
 
             ctx.handle("undeploy " + "--path=" + cliArchiveFile.getAbsolutePath() + " --script=uninstall.scr");
 
             // check that both wars are undeployed
-            assertTrue(checkUndeployed(getBaseURL(url) + "deployment0/SimpleServlet"));
-            assertTrue(checkUndeployed(getBaseURL(url) + "deployment1/SimpleServlet"));
+            assertTrue(checkUndeployed(getBaseURL() + "deployment0/SimpleServlet"));
+            assertTrue(checkUndeployed(getBaseURL() + "deployment1/SimpleServlet"));
         } finally {
             ctx.terminateSession();
         }
@@ -162,8 +148,8 @@ public class ArchiveTestCase {
         cliArchiveFile.delete();
     }
 
-    protected final String getBaseURL(URL url) throws MalformedURLException {
-        return new URL(url.getProtocol(), url.getHost(), url.getPort(), "/").toString();
+    protected final String getBaseURL() throws MalformedURLException {
+        return new URL("http", TestSuiteEnvironment.getHttpAddress(), TestSuiteEnvironment.getHttpPort(), "/").toString();
     }
 
     protected boolean checkUndeployed(String spec) {
