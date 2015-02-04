@@ -70,7 +70,6 @@ public class WebCERTTestsSecurityDomainSetup extends AbstractSecurityRealmsServe
 
     private static final Logger log = Logger.getLogger(WebCERTTestsSecurityDomainSetup.class);
     private static final String APP_SECURITY_DOMAIN = "cert-test";
-    private static final String JSSE_SECURITY_DOMAIN = "cert";
 
     protected static void applyUpdates(final ModelControllerClient client, final List<ModelNode> updates) {
         for (ModelNode update : updates) {

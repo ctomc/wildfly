@@ -38,55 +38,54 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.api.ServerSetup;
+import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.http.util.HttpClientUtils;
 import org.jboss.as.test.integration.common.HttpRequest;
 import org.jboss.as.test.integration.management.Listener;
-import org.jboss.as.test.integration.management.base.ContainerResourceMgmtTestBase;
+import org.jboss.as.test.integration.management.base.AbstractMgmtTestBase;
 import org.jboss.as.test.integration.management.util.WebUtil;
 import org.jboss.as.test.integration.security.common.AbstractSecurityRealmsServerSetupTask;
 import org.jboss.as.test.integration.security.common.config.realm.Authentication;
 import org.jboss.as.test.integration.security.common.config.realm.RealmKeystore;
 import org.jboss.as.test.integration.security.common.config.realm.SecurityRealm;
 import org.jboss.as.test.integration.security.common.config.realm.ServerIdentity;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
-import org.jboss.shrinkwrap.api.Archive;
-import org.jboss.shrinkwrap.api.ShrinkWrap;
-import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ServerSetup;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * @author Dominik Pospisil <dpospisi@redhat.com>
+ * @author Tomaz Cerar
  */
-@RunWith(Arquillian.class)
+@RunWith(WildflyTestRunner.class)
 @ServerSetup(ListenerTestCase.SecurityRealmsSetup.class)
-@RunAsClient
-public class ListenerTestCase extends ContainerResourceMgmtTestBase {
+public class ListenerTestCase extends AbstractMgmtTestBase {
 
     /**
      * We use a different socket binding name for each test, as if the socket is still up the service
      * will not be removed. Rather than adding a sleep we use this approach
      */
     private static int socketBindingCount = 0;
-    @ArquillianResource
-    private URL url;
+    
+    @Inject
+    protected ModelControllerClient client;
+    
+    private String host = TestSuiteEnvironment.getHttpAddress();
 
-    @Deployment
-    public static Archive<?> getDeployment() {
-        JavaArchive ja = ShrinkWrap.create(JavaArchive.class, "dummy.jar");
-        ja.addClass(ListenerTestCase.class);
-        return ja;
+    @Override
+    protected ModelControllerClient getModelControllerClient() {
+        return client;
     }
 
     @Test
@@ -104,9 +103,9 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
     public void testHttpConnector() throws Exception {
 
         addListener(Listener.HTTP);
-
+        
         // check that the connector is live
-        String cURL = "http://" + url.getHost() + ":8181";
+        String cURL = "http://" + host + ":8181";
         String response = HttpRequest.get(cURL, 10, TimeUnit.SECONDS);
         assertTrue("Invalid response: " + response, response.indexOf("JBoss") >= 0);
         removeListener(Listener.HTTP, 5000);
@@ -119,7 +118,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
         // check that the connector is live
         try {
-            String cURL = "https://" + url.getHost() + ":8181";
+            String cURL = "https://" + host + ":8181";
             HttpClient httpClient = HttpClientUtils.wrapHttpsClient(new DefaultHttpClient());
             HttpGet get = new HttpGet(cURL);
 
@@ -171,7 +170,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
         Thread.sleep(1000);
         // check that the connector is not live
-        String cURL = Listener.HTTP.getScheme() + "://" + url.getHost() + ":8181";
+        String cURL = Listener.HTTP.getScheme() + "://" + host + ":8181";
 
         assertFalse("Connector not removed.", WebUtil.testHttpURL(cURL));
 
@@ -228,7 +227,7 @@ public class ListenerTestCase extends ContainerResourceMgmtTestBase {
 
         Thread.sleep(delay);
         // check that the connector is not live
-        String cURL = conn.getScheme() + "://" + url.getHost() + ":8181";
+        String cURL = conn.getScheme() + "://" + host + ":8181";
 
         assertFalse("Listener not removed.", WebUtil.testHttpURL(cURL));
 
