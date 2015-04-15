@@ -36,7 +36,7 @@
         <module name="javax.api"/>
         <module name="javax.transaction.api"/>
         <module name="org.hibernate.hql" optional="true"/>
-        <module name="org.hibernate.search.engine"/>
+        <module name="org.hibernate.search.engine" optional="true"/>
         <module name="org.infinispan" services="import"/>
         <module name="org.infinispan.commons"/>
         <module name="org.infinispan.lucene.directory" optional="true"/>
