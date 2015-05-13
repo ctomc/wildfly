@@ -82,6 +82,41 @@
         </dependency>
 
         <dependency>
+            <groupId>org.jboss</groupId>
+            <artifactId>jboss-ejb-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.ws</groupId>
+            <artifactId>jbossws-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.metadata</groupId>
+            <artifactId>jboss-metadata-ear</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jboss.spec.javax.ejb</groupId>
+            <artifactId>jboss-ejb-api_3.2_spec</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jipijapa</groupId>
+            <artifactId>jipijapa-spi</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-bean-validation</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-clustering-ejb-spi</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-ee</artifactId>
         </dependency>
@@ -99,6 +134,11 @@
         <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-naming</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-security</artifactId>
         </dependency>
 
         <dependency>
