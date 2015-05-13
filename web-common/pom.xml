@@ -119,5 +119,9 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.wildfly</groupId>
+            <artifactId>wildfly-naming</artifactId>
+        </dependency>
     </dependencies>
 </project>
