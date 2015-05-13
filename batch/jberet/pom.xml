@@ -43,6 +43,10 @@
             <artifactId>cdi-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.picketbox</groupId>
+            <artifactId>picketbox</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.wildfly</groupId>
             <artifactId>wildfly-naming</artifactId>
         </dependency>
