@@ -65,6 +65,7 @@ public class ReloadOpsTestCase extends AbstractCliTestBase {
 
     @BeforeClass
     public static void initServer() throws Exception {
+        System.setProperty("server.config","standalone-full-ha.xml");
         container.start();
         initCLI();
     }
