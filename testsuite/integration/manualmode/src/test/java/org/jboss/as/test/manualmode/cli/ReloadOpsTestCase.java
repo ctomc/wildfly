@@ -37,6 +37,7 @@ import java.util.Map;
 import javax.inject.Inject;
 
 import org.jboss.as.cli.CommandContext;
+import org.jboss.as.cli.scriptsupport.CLI;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.test.integration.management.base.AbstractCliTestBase;
@@ -81,7 +82,7 @@ public class ReloadOpsTestCase extends AbstractCliTestBase {
 
         for (int i = 0; i < 100; i++) {
 
-                /*CLI cli = CLI.newInstance();
+                CLI cli = CLI.newInstance();
                 Thread.sleep(1000);
                 logger.info("!!!!!!!!!!!!!!!!!!! Connect !!!!!!!!!!!!!!!!!!!!!!");
                 cli.connect(TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), null, null);
@@ -91,9 +92,9 @@ public class ReloadOpsTestCase extends AbstractCliTestBase {
                 cli.disconnect();
                 logger.info("!!!!!!!!!!!!!!!!!!! Done !!!!!!!!!!!!!!!!!!!!!!");
 
-                waitForLiveServerToReload(15000);*/
-            Thread.sleep(1000);
-            reloadServer(15000);
+                waitForLiveServerToReload(15000);
+            /*Thread.sleep(1000);
+            reloadServer(15000);*/
         }
     }
 
