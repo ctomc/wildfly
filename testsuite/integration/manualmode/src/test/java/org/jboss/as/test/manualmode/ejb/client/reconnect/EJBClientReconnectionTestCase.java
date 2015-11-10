@@ -21,13 +21,16 @@
  */
 package org.jboss.as.test.manualmode.ejb.client.reconnect;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.container.test.api.TargetsContainer;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import javax.inject.Inject;
+import javax.naming.Context;
+import javax.naming.NamingException;
+
 import org.jboss.as.test.manualmode.ejb.Util;
 import org.jboss.ejb.client.ContextSelector;
 import org.jboss.ejb.client.EJBClient;
@@ -45,16 +48,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import javax.naming.Context;
-import javax.naming.NamingException;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import org.wildfly.core.testrunner.ServerControl;
+import org.wildfly.core.testrunner.ServerController;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 
 /**
@@ -63,30 +59,22 @@ import static org.junit.Assert.assertNotNull;
  *
  * @author <a href="mailto:istudens@redhat.com">Ivo Studensky</a>
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
+@ServerControl(manual = true)
 public class EJBClientReconnectionTestCase {
     private static final Logger log = Logger.getLogger(EJBClientReconnectionTestCase.class);
 
     private static final String DEPLOYMENT = "ejbclientreconnection";
-    private static final String CONTAINER = "jbossas-non-clustered";
 
-    @ArquillianResource
-    private ContainerController controller;
-
-    @ArquillianResource
-    private Deployer deployer;
+    @Inject
+    protected static ServerController controller;
 
     private Context context;
     private ContextSelector<EJBClientContext> previousClientContextSelector;
 
+    private final Archive deploymentArchive = ShrinkWrap.create(JavaArchive.class, DEPLOYMENT + ".jar")
+            .addClasses(SimpleCrashBean.class, SimpleCrashBeanRemote.class);
 
-    @Deployment(name = DEPLOYMENT, managed = false, testable = false)
-    @TargetsContainer(CONTAINER)
-    public static Archive<?> deploy() {
-        return ShrinkWrap.create(JavaArchive.class, DEPLOYMENT + ".jar")
-                .addClasses(SimpleCrashBean.class, SimpleCrashBeanRemote.class);
-    }
 
     @Before
     public void before() throws Exception {
@@ -94,10 +82,10 @@ public class EJBClientReconnectionTestCase {
         // setup the client context selector
         this.previousClientContextSelector = setupEJBClientContextSelector();
 
-        controller.start(CONTAINER);
-        log.info("===appserver started===");
-        deployer.deploy(DEPLOYMENT);
-        log.info("===deployment deployed===");
+        controller.start();
+        log.trace("===appserver started===");
+        controller.deploy(deploymentArchive, deploymentArchive.getName());
+        log.trace("===deployment deployed===");
     }
 
     @After
@@ -108,14 +96,14 @@ public class EJBClientReconnectionTestCase {
         this.context.close();
 
         try {
-            if (!controller.isStarted(CONTAINER)) {
-                controller.start(CONTAINER);
+            if (!controller.isStarted()) {
+                controller.start();
             }
-            deployer.undeploy(DEPLOYMENT);
-            log.info("===deployment undeployed===");
+            controller.undeploy(deploymentArchive.getName());
+            log.debug("===deployment undeployed===");
         } finally {
-            controller.stop(CONTAINER);
-            log.info("===appserver stopped===");
+            controller.stop();
+            log.debug("===appserver stopped===");
         }
     }
 
@@ -126,10 +114,10 @@ public class EJBClientReconnectionTestCase {
         String echo = bean.echo("Hello!");
         assertEquals("Hello!", echo);
 
-        controller.stop(CONTAINER);
-        log.info("===appserver stopped===");
-        controller.start(CONTAINER);
-        log.info("===appserver started again===");
+        controller.stop();
+        log.trace("===appserver stopped===");
+        controller.start();
+        log.trace("===appserver started again===");
 
         SimpleCrashBeanRemote bean2 = lookup(SimpleCrashBeanRemote.class, SimpleCrashBean.class, DEPLOYMENT);
         assertNotNull(bean2);
@@ -149,9 +137,9 @@ public class EJBClientReconnectionTestCase {
         String echo = proxy.echo("Hello!");
         assertEquals("Hello!", echo);
 
-        controller.stop(CONTAINER);
+        controller.stop();
         log.info("===appserver stopped===");
-        controller.start(CONTAINER);
+        controller.start();
         log.info("===appserver started again===");
 
 
@@ -196,6 +184,4 @@ public class EJBClientReconnectionTestCase {
 
         return EJBClientContext.setSelector(selector);
     }
-
-
 }

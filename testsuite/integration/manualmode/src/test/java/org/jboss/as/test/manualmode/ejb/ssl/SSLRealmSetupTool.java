@@ -22,18 +22,36 @@
 
 package org.jboss.as.test.manualmode.ejb.ssl;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.as.arquillian.container.ManagementClient;
-import org.jboss.as.controller.operations.common.Util;
-import org.jboss.dmr.ModelNode;
-import org.jboss.logging.Logger;
-import org.junit.Assert;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ADD;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.ALLOW_RESOURCE_SERVICE_RESTART;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.AUTHENTICATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.CORE_SERVICE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.MANAGEMENT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OPERATION_HEADERS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OP_ADDR;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.OUTCOME;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.PROTOCOL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.READ_RESOURCE_OPERATION;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REMOVE;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RESULT;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SECURITY_REALM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SERVER_IDENTITY;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SSL;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUCCESS;
+import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.TRUSTSTORE;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
+import org.jboss.dmr.ModelNode;
+import org.jboss.logging.Logger;
+import org.junit.Assert;
+import org.wildfly.core.testrunner.ManagementClient;
+import org.wildfly.core.testrunner.ServerSetupTask;
 
 /**
  * Setup for ssl ejb remote connection.
@@ -42,26 +60,19 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.*;
  * @author Ondrej Chaloupka
  * @author Jan Martiska
  */
-public class SSLRealmSetupTool {
+public class SSLRealmSetupTool implements ServerSetupTask {
 
     private static final Logger log = Logger.getLogger(SSLRealmSetupTool.class);
 
     // server config stuff
     public static final String SECURITY_REALM_NAME = "SSLRealm";
-    public static final String AUTHENTICATION_PROPERTIES_PATH = "application-users.properties";
-    public static final String AUTHENTICATION_PROPERTIES_RELATIVE_TO = "jboss.server.config.dir";
 
     // server SSL stuff
-    public static final String SERVER_KEYSTORE_ALIAS = "jbossalias";
     public static final String SERVER_KEYSTORE_PASSWORD = "JBossPassword";
     public static final String SERVER_KEYSTORE_FILENAME = "jbossServer.keystore";
-    public static final String SERVER_KEY_PASSWORD = "123456";
 
     // client SSL stuff
-    public static final String CLIENT_KEYSTORE_FILENAME = "jbossClient.keystore";
     public static final String CLIENT_TRUSTSTORE_FILENAME = "jbossClient.truststore";
-    public static final String CLIENT_KEYSTORE_ALIAS = "clientalias";
-    public static final String CLIENT_KEY_PASSWORD = "abcdef";
     public static final String CLIENT_KEYSTORE_PASSWORD = "clientPassword";
 
     // SSL stuff for both
@@ -112,7 +123,8 @@ public class SSLRealmSetupTool {
      * </authentication>
      * </security-realm>
      */
-    public static void setup(final ManagementClient managementClient) throws Exception {
+
+    public void setup(final ManagementClient managementClient) throws Exception {
         // Adding SECURITY REALM
         ModelNode secRealmAddress = getSecurityRealmsAddress();
         secRealmAddress.protect();
@@ -120,7 +132,7 @@ public class SSLRealmSetupTool {
         operation.get(OP_ADDR).set(secRealmAddress);
         operation.get(OP).set(ADD);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        log.infof("Adding security realm %s with result %s", SECURITY_REALM_NAME, result);
+        log.tracef("Adding security realm %s with result %s", SECURITY_REALM_NAME, result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         // Adding SERVER IDENTITY
@@ -129,7 +141,7 @@ public class SSLRealmSetupTool {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         URL resourcesUrl = tccl.getResource("");
         String resourcePath = resourcesUrl.getPath();
-        log.info("Path to resources is " + resourcePath);
+        log.trace("Path to resources is " + resourcePath);
         operation = new ModelNode();
         operation.get(OP_ADDR).set(getSecurityRealmsAddressSSLIdentity());
         operation.get(OP).set(ADD);
@@ -138,7 +150,7 @@ public class SSLRealmSetupTool {
         operation.get("keystore-path").set(KEYSTORES_ABSOLUTE_PATH + File.separator + SERVER_KEYSTORE_FILENAME);
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
-        log.infof("Setting server-identity ssl for realm %s (password %s, keystore path %s) with result %s", SECURITY_REALM_NAME,
+        log.tracef("Setting server-identity ssl for realm %s (password %s, keystore path %s) with result %s", SECURITY_REALM_NAME,
                 SERVER_KEYSTORE_PASSWORD, KEYSTORES_ABSOLUTE_PATH, result.get(OUTCOME));
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
@@ -146,8 +158,8 @@ public class SSLRealmSetupTool {
         operation = new ModelNode();
         operation.get(OP_ADDR).set(getSecurityRealmsAddressAuthentication());
         operation.get(OP).set(ADD);
-        operation.get("keystore-path").set(resourcePath + "ejb3/ssl/jbossServer.keystore");
-        operation.get("keystore-password").set(SERVER_KEYSTORE_PASSWORD);
+        operation.get("keystore-path").set(KEYSTORES_ABSOLUTE_PATH + File.separator + CLIENT_TRUSTSTORE_FILENAME);
+        operation.get("keystore-password").set(CLIENT_KEYSTORE_PASSWORD);
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
@@ -164,19 +176,19 @@ public class SSLRealmSetupTool {
         operation.get("enabled").set(true);
         operation.get("security-realm").set(SECURITY_REALM_NAME);
         result = managementClient.getControllerClient().execute(operation);
-        log.info("creating connector result " + result);
+        log.trace("creating connector result " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         //add remoting connector
         operation = new ModelNode();
         operation.get(OP_ADDR).set(SSLRealmSetupTool.getRemotingConnectorAddress());
         operation.get(OP).set(ADD);
-        operation.get(SECURITY_REALM).set(SECURITY_REALM_NAME);
+        //operation.get(SECURITY_REALM).set(SECURITY_REALM_NAME);
         operation.get(PROTOCOL).set("https-remoting");
         operation.get("connector-ref").set("testConnector");
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
-        log.infof("Adding HTTPS connector", result);
+        log.tracef("Adding HTTPS connector", result);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
     }
 
@@ -186,21 +198,21 @@ public class SSLRealmSetupTool {
         operation.get(OP_ADDR).set(getSecurityRealmsAddress());
         operation.get(RECURSIVE).set("true");
         ModelNode ret = managementClient.getControllerClient().execute(operation);
-        log.info("SSLRealm config looks like this:\n" + ret.get(RESULT).toJSONString(false));
+        log.trace("SSLRealm config looks like this:\n" + ret.get(RESULT).toJSONString(false));
     }
 
-    public static void tearDown(final ManagementClient managementClient, ContainerController controller) throws Exception {
+    public void tearDown(final ManagementClient managementClient) throws Exception {
 
         ModelNode operation = new ModelNode();
         operation.get(OP_ADDR).set(SSLRealmSetupTool.getRemotingConnectorAddress());
         operation.get(OP).set(REMOVE);
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         ModelNode result = managementClient.getControllerClient().execute(operation);
-        log.infof("remove HTTPS connector", result);
+        log.tracef("remove HTTPS connector", result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
-        controller.stop(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
-        controller.start(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
+        /*controller.stop(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
+        controller.start(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);*/
 
 
         operation = new ModelNode();
@@ -210,7 +222,7 @@ public class SSLRealmSetupTool {
         operation.get(OP_ADDR).add("https-listener", "testConnector");
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
-        log.info("removing connector result " + result);
+        log.trace("removing connector result " + result);
         Assert.assertEquals(SUCCESS, result.get(OUTCOME).asString());
 
         // Removing security realm
@@ -221,11 +233,8 @@ public class SSLRealmSetupTool {
         operation.get(OP).set(REMOVE);
         operation.get(OPERATION_HEADERS).get(ALLOW_RESOURCE_SERVICE_RESTART).set(true);
         result = managementClient.getControllerClient().execute(operation);
-        log.infof("Removing security realm %s with result %s", SECURITY_REALM_NAME, result);
+        log.tracef("Removing security realm %s with result %s", SECURITY_REALM_NAME, result);
         Assert.assertEquals(result.toString(), SUCCESS, result.get(OUTCOME).asString());
-        controller.stop(SSLEJBRemoteClientTestCase.DEFAULT_JBOSSAS);
-
-
     }
 
 }

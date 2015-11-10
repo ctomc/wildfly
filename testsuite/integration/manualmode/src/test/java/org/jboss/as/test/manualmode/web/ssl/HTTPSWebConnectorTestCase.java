@@ -49,6 +49,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.jboss.arquillian.container.test.api.ContainerController;
 import org.jboss.arquillian.container.test.api.Deployer;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -181,14 +182,12 @@ public class HTTPSWebConnectorTestCase {
     @InSequence(1)
     public void testDefaultConnector() throws Exception {
 
-        Assume.assumeFalse(SystemUtils.IS_JAVA_1_6 && SystemUtils.JAVA_VENDOR.toUpperCase(Locale.ENGLISH).contains("IBM"));
-
         final URL printPrincipalUrl = getServletUrl(HTTPS_PORT, PrincipalPrintingServlet.SERVLET_PATH);
         final URL securedUrl = getServletUrl(HTTPS_PORT, SECURED_SERVLET_WITH_SESSION);
         final URL unsecuredUrl = getServletUrl(HTTPS_PORT, SimpleServlet.SERVLET_PATH);
 
-        final HttpClient httpClient = getHttpClient(CLIENT_KEYSTORE_FILE);
-        final HttpClient httpClientUntrusted = getHttpClient(UNTRUSTED_KEYSTORE_FILE);
+        final CloseableHttpClient httpClient = getHttpClient(CLIENT_KEYSTORE_FILE);
+        final CloseableHttpClient httpClientUntrusted = getHttpClient(UNTRUSTED_KEYSTORE_FILE);
 
         try {
             makeCallWithHttpClient(printPrincipalUrl, httpClient, HttpServletResponse.SC_FORBIDDEN);
@@ -210,8 +209,8 @@ public class HTTPSWebConnectorTestCase {
                 // OK - on windows usually fails with this one
             }
         } finally {
-            httpClient.getConnectionManager().shutdown();
-            httpClientUntrusted.getConnectionManager().shutdown();
+            httpClient.close();
+            httpClientUntrusted.close();
         }
     }
 
@@ -229,14 +228,12 @@ public class HTTPSWebConnectorTestCase {
     @InSequence(1)
     public void testNonVerifyingConnector() throws Exception {
 
-        Assume.assumeFalse(SystemUtils.IS_JAVA_1_6 && SystemUtils.JAVA_VENDOR.toUpperCase(Locale.ENGLISH).contains("IBM"));
-
         final URL printPrincipalUrl = getServletUrl(HTTPS_PORT_VERIFY_FALSE, PrincipalPrintingServlet.SERVLET_PATH);
         final URL securedUrl = getServletUrl(HTTPS_PORT_VERIFY_FALSE, SECURED_SERVLET_WITH_SESSION);
         final URL unsecuredUrl = getServletUrl(HTTPS_PORT_VERIFY_FALSE, SimpleServlet.SERVLET_PATH);
 
-        final HttpClient httpClient = getHttpClient(CLIENT_KEYSTORE_FILE);
-        final HttpClient httpClientUntrusted = getHttpClient(UNTRUSTED_KEYSTORE_FILE);
+        final CloseableHttpClient httpClient = getHttpClient(CLIENT_KEYSTORE_FILE);
+        final CloseableHttpClient httpClientUntrusted = getHttpClient(UNTRUSTED_KEYSTORE_FILE);
 
         try {
             makeCallWithHttpClient(printPrincipalUrl, httpClient, HttpServletResponse.SC_FORBIDDEN);
@@ -258,8 +255,8 @@ public class HTTPSWebConnectorTestCase {
                 // OK - on windows usually fails with this one
             }
         } finally {
-            httpClient.getConnectionManager().shutdown();
-            httpClientUntrusted.getConnectionManager().shutdown();
+            httpClient.close();
+            httpClientUntrusted.close();
         }
     }
 
@@ -277,14 +274,12 @@ public class HTTPSWebConnectorTestCase {
     @InSequence(1)
     public void testWantVerifyConnector() throws Exception {
 
-        Assume.assumeFalse(SystemUtils.IS_JAVA_1_6 && SystemUtils.JAVA_VENDOR.toUpperCase(Locale.ENGLISH).contains("IBM"));
-
         final URL printPrincipalUrl = getServletUrl(HTTPS_PORT_VERIFY_WANT, PrincipalPrintingServlet.SERVLET_PATH);
         final URL securedUrl = getServletUrl(HTTPS_PORT_VERIFY_WANT, SECURED_SERVLET_WITH_SESSION);
         final URL unsecuredUrl = getServletUrl(HTTPS_PORT_VERIFY_WANT, SimpleServlet.SERVLET_PATH);
 
-        final HttpClient httpClient = getHttpClient(CLIENT_KEYSTORE_FILE);
-        final HttpClient httpClientUntrusted = getHttpClient(UNTRUSTED_KEYSTORE_FILE);
+        final CloseableHttpClient httpClient = getHttpClient(CLIENT_KEYSTORE_FILE);
+        final CloseableHttpClient httpClientUntrusted = getHttpClient(UNTRUSTED_KEYSTORE_FILE);
 
         try {
             makeCallWithHttpClient(printPrincipalUrl, httpClientUntrusted, HttpServletResponse.SC_FORBIDDEN);
@@ -302,8 +297,8 @@ public class HTTPSWebConnectorTestCase {
             makeCallWithHttpClient(securedUrl, httpClientUntrusted, HttpServletResponse.SC_FORBIDDEN);
 
         } finally {
-            httpClient.getConnectionManager().shutdown();
-            httpClientUntrusted.getConnectionManager().shutdown();
+            httpClient.close();
+            httpClientUntrusted.close();
         }
     }
 
@@ -320,8 +315,8 @@ public class HTTPSWebConnectorTestCase {
     @Test
     @InSequence(1)
     public void testVerifyingConnector() throws Exception {
-        final HttpClient httpClient = getHttpClient(CLIENT_KEYSTORE_FILE);
-        final HttpClient httpClientUntrusted = getHttpClient(UNTRUSTED_KEYSTORE_FILE);
+        final CloseableHttpClient httpClient = getHttpClient(CLIENT_KEYSTORE_FILE);
+        final CloseableHttpClient httpClientUntrusted = getHttpClient(UNTRUSTED_KEYSTORE_FILE);
         try {
             final URL printPrincipalUrl = getServletUrl(HTTPS_PORT_VERIFY_TRUE, PrincipalPrintingServlet.SERVLET_PATH);
             final URL securedUrl = getServletUrl(HTTPS_PORT_VERIFY_TRUE, SECURED_SERVLET_WITH_SESSION);
@@ -357,8 +352,8 @@ public class HTTPSWebConnectorTestCase {
             }
 
         } finally {
-            httpClient.getConnectionManager().shutdown();
-            httpClientUntrusted.getConnectionManager().shutdown();
+            httpClient.close();
+            httpClientUntrusted.close();
         }
     }
 
@@ -380,8 +375,8 @@ public class HTTPSWebConnectorTestCase {
         return new URL(HTTPS, TestSuiteEnvironment.getServerAddress(), connectorPort, "/" + APP_CONTEXT + servletPath);
     }
 
-    private static HttpClient getHttpClient(File keystoreFile) {
-        return SSLTruststoreUtil.getHttpClientWithSSL(keystoreFile, SecurityTestConstants.KEYSTORE_PASSWORD,
+    private static CloseableHttpClient getHttpClient(File keystoreFile) {
+        return (CloseableHttpClient)SSLTruststoreUtil.getHttpClientWithSSL(keystoreFile, SecurityTestConstants.KEYSTORE_PASSWORD,
                 CLIENT_TRUSTSTORE_FILE, SecurityTestConstants.KEYSTORE_PASSWORD);
     }
 

@@ -26,10 +26,8 @@ import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.REA
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.RECURSIVE;
 import static org.jboss.as.controller.descriptions.ModelDescriptionConstants.SUBSYSTEM;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
+import javax.inject.Inject;
+
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.operations.common.Util;
@@ -40,6 +38,9 @@ import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ServerControl;
+import org.wildfly.core.testrunner.ServerController;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Ensures that the full model including runtime resources/attributes can be read in both normal and admin-only mode
@@ -47,25 +48,20 @@ import org.junit.runner.RunWith;
  *
  * @author Kabir Khan
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
+@ServerControl(manual = true)
 public class ReadFullModelTestCase {
 
     //This is the full-ha setup which is the fullest config we have
-    //Reuse this rather than a setup
-    public static final String SERVER = "jbossas-messaging-ha-server1";
+    public static final String CONFIG = "standalone-full-ha.xml";
 
-    @ArquillianResource
-    protected static ContainerController controller;
-
-    protected static ModelControllerClient createClient1() {
-        return TestSuiteEnvironment.getModelControllerClient();
-    }
+    @Inject
+    protected ServerController container;
 
 
     @Test
     public void test() throws Exception {
-        controller.start(SERVER);
+        container.start(CONFIG, true);
         try {
             ModelControllerClient client = TestSuiteEnvironment.getModelControllerClient();
             ModelNode rr = Util.createEmptyOperation(READ_RESOURCE_OPERATION, PathAddress.EMPTY_ADDRESS);
@@ -78,10 +74,10 @@ public class ReadFullModelTestCase {
             Assert.assertTrue(result.hasDefined(SUBSYSTEM, "jgroups"));
 
             ServerReload.executeReloadAndWaitForCompletion(client, true);
-            result = ModelTestUtils.checkResultAndGetContents(client.execute(rr));
+            ModelTestUtils.checkResultAndGetContents(client.execute(rr));
         } finally {
-            if (controller.isStarted(SERVER)) {
-                controller.stop(SERVER);
+            if (container.isStarted()) {
+                container.stop();
             }
         }
     }

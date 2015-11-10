@@ -21,8 +21,6 @@
  */
 package org.jboss.as.test.manualmode.ws;
 
-import static org.jboss.as.test.shared.ServerReload.executeReloadAndWaitForCompletion;
-
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
@@ -37,9 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.namespace.QName;
 import javax.xml.ws.Service;
 
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.After;
@@ -57,7 +53,7 @@ import org.wildfly.core.testrunner.WildflyTestRunner;
  */
 @RunWith(WildflyTestRunner.class)
 @ServerControl(manual = true)
-public class ReloadWSDLPublisherTestCase extends AbstractWSTest {
+public class ReloadWSDLPublisherTestCase {
 
     private static final String DEPLOYMENT = "jaxws-manual-pojo.war";
     private static final String keepAlive = System.getProperty("http.keepAlive") == null ? "true" : System.getProperty("http.keepAlive");
@@ -66,36 +62,34 @@ public class ReloadWSDLPublisherTestCase extends AbstractWSTest {
     @Inject
     protected ServerController container;
 
+    protected ManagementClient managementClient;
+
     public static WebArchive deployment() {
-        WebArchive pojoWar = ShrinkWrap.create(WebArchive.class, DEPLOYMENT).addClasses(
+        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT).addClasses(
                 EndpointIface.class, PojoEndpoint.class);
-        return pojoWar;
     }
 
     @Before
     public void endpointLookup() throws Exception {
         container.start();
-        client = container.getClient().getControllerClient();
+        managementClient = container.getClient();
         if (container.isStarted()) {
-            deploy(deployment(), DEPLOYMENT);
+            container.deploy(deployment(), DEPLOYMENT);
         }
         System.setProperty("http.keepAlive", "false");
         System.setProperty("http.maxConnections", "1");
     }
 
     @Test
-    @OperateOnDeployment(DEPLOYMENT)
     public void testHelloStringAfterReload() throws Exception {
         Assert.assertTrue("Container is not started", container.isStarted());
-        ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
         QName serviceName = new QName("http://jbossws.org/basic", "POJOService");
         URL wsdlURL = new URL(managementClient.getWebUri().toURL(), "/jaxws-manual-pojo/POJOService?wsdl");
         checkWsdl(wsdlURL);
         Service service = Service.create(wsdlURL, serviceName);
         EndpointIface proxy = service.getPort(EndpointIface.class);
         Assert.assertEquals("Hello World!", proxy.helloString("World"));
-        executeReloadAndWaitForCompletion(managementClient.getControllerClient(), 100000);
+        container.reload();
         checkWsdl(wsdlURL);
         serviceName = new QName("http://jbossws.org/basic", "POJOService");
         service = Service.create(wsdlURL, serviceName);
@@ -108,9 +102,8 @@ public class ReloadWSDLPublisherTestCase extends AbstractWSTest {
     public void stopContainer() throws ServerDeploymentHelper.ServerDeploymentException {
         System.setProperty("http.keepAlive", keepAlive);
         System.setProperty("http.maxConnections", maxConnections);
-        client = TestSuiteEnvironment.getModelControllerClient();
         if (container.isStarted()) {
-            undeploy(DEPLOYMENT);
+            container.undeploy(DEPLOYMENT);
         }
         if (container.isStarted()) {
             container.stop();

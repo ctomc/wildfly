@@ -45,6 +45,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jboss.as.arquillian.api.ServerSetupTask;
 import org.jboss.as.arquillian.container.ManagementClient;
@@ -102,8 +103,8 @@ public abstract class AbstractCertificateLoginModuleTestCase {
         final URL securedUrl = getServletUrl(HTTPS_PORT, appName, SECURED_SERVLET_WITH_SESSION);
         final URL unsecuredUrl = getServletUrl(HTTPS_PORT, appName, SimpleServlet.SERVLET_PATH);
 
-        final HttpClient httpClient = getHttpsClient(CLIENT_KEYSTORE_FILE);
-        final HttpClient httpClientUntrusted = getHttpsClient(UNTRUSTED_KEYSTORE_FILE);
+        final CloseableHttpClient httpClient = getHttpsClient(CLIENT_KEYSTORE_FILE);
+        final CloseableHttpClient httpClientUntrusted = getHttpsClient(UNTRUSTED_KEYSTORE_FILE);
 
         try {
             makeCallWithHttpClient(printPrincipalUrl, httpClient, HttpServletResponse.SC_FORBIDDEN);
@@ -125,8 +126,8 @@ public abstract class AbstractCertificateLoginModuleTestCase {
                 // OK - on windows usually fails with this one
             }
         } finally {
-            httpClient.getConnectionManager().shutdown();
-            httpClientUntrusted.getConnectionManager().shutdown();
+            httpClient.close();
+            httpClientUntrusted.close();
         }
     }
 
@@ -157,8 +158,8 @@ public abstract class AbstractCertificateLoginModuleTestCase {
         return httpResponseBody;
     }
 
-    public static HttpClient getHttpsClient(File keystoreFile) {
-        return SSLTruststoreUtil.getHttpClientWithSSL(keystoreFile, SecurityTestConstants.KEYSTORE_PASSWORD, CLIENT_TRUSTSTORE_FILE,
+    public static CloseableHttpClient getHttpsClient(File keystoreFile) {
+        return (CloseableHttpClient) SSLTruststoreUtil.getHttpClientWithSSL(keystoreFile, SecurityTestConstants.KEYSTORE_PASSWORD, CLIENT_TRUSTSTORE_FILE,
                 SecurityTestConstants.KEYSTORE_PASSWORD);
     }
 

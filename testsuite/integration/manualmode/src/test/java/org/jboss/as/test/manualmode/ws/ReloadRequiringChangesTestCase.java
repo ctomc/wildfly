@@ -40,19 +40,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import javax.inject.Inject;
 
-import org.jboss.arquillian.container.test.api.ContainerController;
-import org.jboss.arquillian.container.test.api.Deployer;
-import org.jboss.arquillian.container.test.api.Deployment;
-import org.jboss.arquillian.container.test.api.OperateOnDeployment;
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.arquillian.test.api.ArquillianResource;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.shared.ServerReload;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
+import org.jboss.as.controller.client.helpers.standalone.ServerDeploymentHelper;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -61,111 +53,102 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ManagementClient;
+import org.wildfly.core.testrunner.ServerControl;
+import org.wildfly.core.testrunner.ServerController;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Some tests on changes to the model requiring reload
  *
  * @author <a href="mailto:alessio.soldano@jboss.com">Alessio Soldano</a>
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
+@ServerControl(manual = true)
 public class ReloadRequiringChangesTestCase {
 
-    private static final String DEFAULT_JBOSSAS = "default-jbossas";
-    private static final String DEPLOYMENT = "jaxws-manual-pojo";
+    private static final String DEPLOYMENT_URI = "jaxws-manual-pojo";
+    private static final String DEPLOYMENT = "jaxws-manual-pojo.war";
 
-    @ArquillianResource
-    ContainerController containerController;
+    @Inject
+    protected ServerController containerController;
 
-    @ArquillianResource
-    Deployer deployer;
+    protected ManagementClient client;
 
-    @Deployment(name = DEPLOYMENT, testable = false, managed = false)
+
     public static WebArchive deployment() {
-        WebArchive pojoWar = ShrinkWrap.create(WebArchive.class, DEPLOYMENT + ".war").addClasses(
+        return ShrinkWrap.create(WebArchive.class, DEPLOYMENT).addClasses(
                 EndpointIface.class, PojoEndpoint.class);
-        return pojoWar;
     }
 
     @Before
     public void startContainer() throws Exception {
-        containerController.start(DEFAULT_JBOSSAS);
-        if (containerController.isStarted(DEFAULT_JBOSSAS)) {
-            deployer.deploy(DEPLOYMENT);
+        containerController.start();
+        if (containerController.isStarted()) {
+            containerController.deploy(deployment(), DEPLOYMENT);
         }
+        client = containerController.getClient();
     }
 
     @Test
-    @OperateOnDeployment(DEPLOYMENT)
     public void testWSDLHostChangeRequiresReloadAndDoesNotAffectRuntime() throws Exception {
-        Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
-        ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
+        Assert.assertTrue(containerController.isStarted());
 
-        ModelControllerClient client = managementClient.getControllerClient();
         String initialWsdlHost = null;
         try {
-            initialWsdlHost = getWsdlHost(client);
+            initialWsdlHost = getWsdlHost(client.getControllerClient());
 
             //change wsdl-host to "foo-host" and reload
             final String hostname = "foo-host";
-	        setWsdlHost(client, hostname);
-            ServerReload.executeReloadAndWaitForCompletion(client);
+            setWsdlHost(client.getControllerClient(), hostname);
+            containerController.reload();
+            client = containerController.getClient();
 
             //change wsdl-host to "bar-host" and verify deployment still uses "foo-host"
-	        setWsdlHost(client, "bar-host");
-	        URL wsdlURL = new URL(managementClient.getWebUri().toURL(), '/' + DEPLOYMENT + "/POJOService?wsdl");
-	        checkWsdl(wsdlURL, hostname);
+            setWsdlHost(client.getControllerClient(), "bar-host");
+            URL wsdlURL = new URL(client.getWebUri().toURL(), '/' + DEPLOYMENT_URI + "/POJOService?wsdl");
+            checkWsdl(wsdlURL, hostname);
         } finally {
-            try {
-                if (initialWsdlHost != null) {
-                    setWsdlHost(client, initialWsdlHost);
-                }
-            } finally {
-                managementClient.close();
+            if (initialWsdlHost != null) {
+                setWsdlHost(client.getControllerClient(), initialWsdlHost);
             }
+
         }
     }
 
     @Test
-    @OperateOnDeployment(DEPLOYMENT)
     public void testWSDLHostUndefineRequiresReloadAndDoesNotAffectRuntime() throws Exception {
-        Assert.assertTrue(containerController.isStarted(DEFAULT_JBOSSAS));
-        ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
+        Assert.assertTrue(containerController.isStarted());
 
-        ModelControllerClient client = managementClient.getControllerClient();
         String initialWsdlHost = null;
         try {
-            initialWsdlHost = getWsdlHost(client);
+            initialWsdlHost = getWsdlHost(client.getControllerClient());
 
             //change wsdl-host to "my-host" and reload
             final String hostname = "my-host";
-	        setWsdlHost(client, hostname);
-	        ServerReload.executeReloadAndWaitForCompletion(client);
+            setWsdlHost(client.getControllerClient(), hostname);
+            containerController.reload();
+            client = containerController.getClient(); //get new client after reload
 
             //undefine wsdl-host and verify deployment still uses "foo-host"
-	        setWsdlHost(client, null);
-	        URL wsdlURL = new URL(managementClient.getWebUri().toURL(), '/' + DEPLOYMENT + "/POJOService?wsdl");
-	        checkWsdl(wsdlURL, hostname);
+            setWsdlHost(client.getControllerClient(), null);
+            URL wsdlURL = new URL(client.getWebUri().toURL(), '/' + DEPLOYMENT_URI + "/POJOService?wsdl");
+            checkWsdl(wsdlURL, hostname);
         } finally {
-            try {
-                if (initialWsdlHost != null) {
-                    setWsdlHost(client, initialWsdlHost);
-                }
-            } finally {
-                managementClient.close();
+            if (initialWsdlHost != null) {
+                setWsdlHost(client.getControllerClient(), initialWsdlHost);
             }
+
         }
     }
 
     @After
-    public void stopContainer() {
-        if (containerController.isStarted(DEFAULT_JBOSSAS)) {
-            deployer.undeploy(DEPLOYMENT);
+    public void stopContainer() throws ServerDeploymentHelper.ServerDeploymentException {
+        if (containerController.isStarted()) {
+            containerController.undeploy(DEPLOYMENT);
         }
-        if (containerController.isStarted(DEFAULT_JBOSSAS)) {
-            containerController.stop(DEFAULT_JBOSSAS);
+        if (containerController.isStarted()) {
+            containerController.stop();
         }
     }
 
@@ -184,16 +167,16 @@ public class ReloadRequiringChangesTestCase {
     }
 
     private void setWsdlHost(final ModelControllerClient client, final String wsdlHost) throws Exception {
-    	ModelNode op;
-    	if (wsdlHost != null) {
-        	op = createOpNode("subsystem=webservices/", WRITE_ATTRIBUTE_OPERATION);
-        	op.get(NAME).set("wsdl-host");
-    		op.get(VALUE).set(wsdlHost);
-    	} else {
-    		op = createOpNode("subsystem=webservices/", UNDEFINE_ATTRIBUTE_OPERATION);
-        	op.get(NAME).set("wsdl-host");
-    	}
-    	applyUpdate(client, op);
+        ModelNode op;
+        if (wsdlHost != null) {
+            op = createOpNode("subsystem=webservices/", WRITE_ATTRIBUTE_OPERATION);
+            op.get(NAME).set("wsdl-host");
+            op.get(VALUE).set(wsdlHost);
+        } else {
+            op = createOpNode("subsystem=webservices/", UNDEFINE_ATTRIBUTE_OPERATION);
+            op.get(NAME).set("wsdl-host");
+        }
+        applyUpdate(client, op);
     }
 
     private static ModelNode createOpNode(String address, String operation) {
@@ -211,20 +194,20 @@ public class ReloadRequiringChangesTestCase {
         return op;
     }
 
-	private static ModelNode applyUpdate(final ModelControllerClient client, final ModelNode update) throws Exception {
-		final ModelNode result = client.execute(new OperationBuilder(update).build());
-		if (result.hasDefined(OUTCOME) && SUCCESS.equals(result.get(OUTCOME).asString())) {
-			Assert.assertTrue(result.hasDefined(RESPONSE_HEADERS));
-			ModelNode responseHeaders = result.get(RESPONSE_HEADERS);
-			Assert.assertTrue(responseHeaders.hasDefined(OPERATION_REQUIRES_RELOAD));
-			Assert.assertEquals("true", responseHeaders.get(OPERATION_REQUIRES_RELOAD).asString());
-			return result;
+    private static ModelNode applyUpdate(final ModelControllerClient client, final ModelNode update) throws Exception {
+        final ModelNode result = client.execute(new OperationBuilder(update).build());
+        if (result.hasDefined(OUTCOME) && SUCCESS.equals(result.get(OUTCOME).asString())) {
+            Assert.assertTrue(result.hasDefined(RESPONSE_HEADERS));
+            ModelNode responseHeaders = result.get(RESPONSE_HEADERS);
+            Assert.assertTrue(responseHeaders.hasDefined(OPERATION_REQUIRES_RELOAD));
+            Assert.assertEquals("true", responseHeaders.get(OPERATION_REQUIRES_RELOAD).asString());
+            return result;
         } else if (result.hasDefined(FAILURE_DESCRIPTION)) {
             throw new Exception(result.get(FAILURE_DESCRIPTION).toString());
         } else {
             throw new Exception("Operation not successful; outcome = " + result.get(OUTCOME));
         }
-	}
+    }
 
 
     private void checkWsdl(URL wsdlURL, String host) throws IOException {
@@ -234,17 +217,17 @@ public class ReloadRequiringChangesTestCase {
             Assert.assertEquals(200, connection.getResponseCode());
             connection.getInputStream();
 
-			BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-			String line;
-			while ((line = in.readLine()) != null) {
-				if (line.contains("address location")) {
-					Assert.assertTrue(line.contains(host));
-					return;
-				}
-			}
-			fail("Could not check soap:address!");
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String line;
+            while ((line = in.readLine()) != null) {
+                if (line.contains("address location")) {
+                    Assert.assertTrue(line.contains(host));
+                    return;
+                }
+            }
+            fail("Could not check soap:address!");
         } finally {
-        	connection.disconnect();
+            connection.disconnect();
         }
     }
 }

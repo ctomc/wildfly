@@ -51,10 +51,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import javax.inject.Inject;
 
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.client.ModelControllerClient;
 import org.jboss.as.controller.client.OperationBuilder;
-import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
@@ -63,6 +61,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ManagementClient;
 import org.wildfly.core.testrunner.ServerControl;
 import org.wildfly.core.testrunner.ServerController;
 import org.wildfly.core.testrunner.WildflyTestRunner;
@@ -76,34 +75,30 @@ import org.wildfly.core.testrunner.WildflyTestRunner;
  */
 @RunWith(WildflyTestRunner.class)
 @ServerControl(manual = true)
-public class WSAttributesChangesTestCase extends AbstractWSTest {
+public class WSAttributesChangesTestCase {
 
-    private static final String DEFAULT_JBOSSAS = "default-jbossas";
     private static final String DEP_1 = "jaxws-manual-pojo-1";
     private static final String DEP_2 = "jaxws-manual-pojo-2";
 
     @Inject
     protected ServerController container;
 
+    protected ManagementClient managementClient;
 
-    //@Deployment(name = DEP_1, testable = false, managed = false)
     public static WebArchive deployment1() {
-        WebArchive pojoWar = ShrinkWrap.create(WebArchive.class, DEP_1 + ".war").addClasses(
+        return ShrinkWrap.create(WebArchive.class, DEP_1 + ".war").addClasses(
                 EndpointIface.class, PojoEndpoint.class);
-        return pojoWar;
     }
 
-    //@Deployment(name = DEP_2, testable = false, managed = false)
     public static WebArchive deployment2() {
-        WebArchive pojoWar = ShrinkWrap.create(WebArchive.class, DEP_2 + ".war").addClasses(
+        return ShrinkWrap.create(WebArchive.class, DEP_2 + ".war").addClasses(
                 EndpointIface.class, PojoEndpoint.class);
-        return pojoWar;
     }
 
     @Before
     public void startContainer() throws Exception {
         container.start();
-        client = container.getClient().getControllerClient();
+        managementClient = container.getClient();
     }
 
     @Test
@@ -114,23 +109,19 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
 
     private void performWsdlHostAttributeTest(boolean checkUpdateWithDeployedEndpoint) throws Exception {
         Assert.assertTrue(container.isStarted());
-        /*ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
-
-        ModelControllerClient client = managementClient.getControllerClient();*/
         String initialWsdlHost = null;
         try {
-            initialWsdlHost = getAttribute("wsdl-host", client);
+            initialWsdlHost = getAttribute("wsdl-host", managementClient.getControllerClient());
 
             final String hostnameA = "foo-host-a";
 
             ModelNode op = createOpNode("subsystem=webservices/", WRITE_ATTRIBUTE_OPERATION);
             op.get(NAME).set("wsdl-host");
             op.get(VALUE).set(hostnameA);
-            applyUpdate(client, op, false); //update successful, no need to reload
+            applyUpdate(managementClient.getControllerClient(), op, false); //update successful, no need to reload
 
             //now we deploy an endpoint...
-            deploy(deployment1(), DEP_1 + ".war");
+            container.deploy(deployment1(), DEP_1 + ".war");
 
             //verify the updated wsdl host is used...
             URL wsdlURL = new URL(container.getClient().getWebUri().toURL(), '/' + DEP_1 + "/POJOService?wsdl");
@@ -142,19 +133,19 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
                 ModelNode opB = createOpNode("subsystem=webservices/", WRITE_ATTRIBUTE_OPERATION);
                 opB.get(NAME).set("wsdl-host");
                 opB.get(VALUE).set(hostnameB);
-                applyUpdate(client, opB, true); //update again, but we'll need to reload, as there's an active deployment
+                applyUpdate(managementClient.getControllerClient(), opB, true); //update again, but we'll need to reload, as there's an active deployment
 
                 //check the wsdl host is still the one we updated to before
                 checkWsdl(wsdlURL, hostnameA);
 
                 //and check that still applies even if we undeploy and redeploy the endpoint
-                undeploy(DEP_1 + ".war");
-                deploy(deployment1(), DEP_1 + ".war");
+                container.undeploy(DEP_1 + ".war");
+                container.deploy(deployment1(), DEP_1 + ".war");
                 checkWsdl(wsdlURL, hostnameA);
             }
         } finally {
             try {
-                undeploy(DEP_1 + ".war");
+                container.undeploy(DEP_1 + ".war");
             } catch (Throwable t) {
                 //ignore
             }
@@ -163,7 +154,7 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
                 op.get(NAME).set("wsdl-host");
                 op.get(VALUE).set(initialWsdlHost);
                 op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-                applyUpdate(client, op, checkUpdateWithDeployedEndpoint);
+                applyUpdate(managementClient.getControllerClient(), op, checkUpdateWithDeployedEndpoint);
             }
 
         }
@@ -177,8 +168,6 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
 
     private void performWsdlPortAttributeTest(boolean checkUpdateWithDeployedEndpoint) throws Exception {
         Assert.assertTrue(container.isStarted());
-        ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
 
         ModelControllerClient client = managementClient.getControllerClient();
         try {
@@ -190,7 +179,7 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
             applyUpdate(client, op, false); //update successful, no need to reload
 
             //now we deploy an endpoint...
-            deploy(deployment2(), DEP_2 + ".war");
+            container.deploy(deployment2(), DEP_2 + ".war");
 
             //verify the updated wsdl port is used...
             URL wsdlURL = new URL(managementClient.getWebUri().toURL(), '/' + DEP_2 + "/POJOService?wsdl");
@@ -208,24 +197,21 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
                 checkWsdl(wsdlURL, portA);
 
                 //and check that still applies even if we undeploy and redeploy the endpoint
-                undeploy(DEP_2 + ".war");
-                deploy(deployment2(), DEP_2 + ".war");
+                container.undeploy(DEP_2 + ".war");
+                container.deploy(deployment2(), DEP_2 + ".war");
                 checkWsdl(wsdlURL, portA);
             }
         } finally {
             try {
-                undeploy(DEP_2 + ".war");
+                container.undeploy(DEP_2 + ".war");
             } catch (Throwable t) {
                 //ignore
             }
-            try {
-                ModelNode op = createOpNode("subsystem=webservices/", UNDEFINE_ATTRIBUTE_OPERATION);
-                op.get(NAME).set("wsdl-port");
-                op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
-                applyUpdate(client, op, checkUpdateWithDeployedEndpoint);
-            } finally {
-                managementClient.close();
-            }
+            ModelNode op = createOpNode("subsystem=webservices/", UNDEFINE_ATTRIBUTE_OPERATION);
+            op.get(NAME).set("wsdl-port");
+            op.get(OPERATION_HEADERS, ALLOW_RESOURCE_SERVICE_RESTART).set(true);
+            applyUpdate(client, op, checkUpdateWithDeployedEndpoint);
+
         }
     }
 
@@ -237,8 +223,6 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
 
     private void performWsdlUriSchemeAttributeTest(boolean checkUpdateWithDeployedEndpoint) throws Exception {
         Assert.assertTrue(container.isStarted());
-        ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
 
         ModelControllerClient client = managementClient.getControllerClient();
         String initialWsdlUriScheme = null;
@@ -250,17 +234,17 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
             op.get(NAME).set("wsdl-uri-scheme");
             op.get(VALUE).set("https");
             applyUpdate(client, op, false);
-            deploy(deployment1(), DEP_1 + ".war");
+            container.deploy(deployment1(), DEP_1 + ".war");
             //check if it works for the deployed endpoint url
             checkWSDLUriScheme(client, DEP_1 + ".war", "https");
-            undeploy(DEP_1 + ".war");
+            container.undeploy(DEP_1 + ".war");
 
             //set wsdl-uri-scheme value to http
             ModelNode op2 = createOpNode("subsystem=webservices/", WRITE_ATTRIBUTE_OPERATION);
             op2.get(NAME).set("wsdl-uri-scheme");
             op2.get(VALUE).set("http");
             applyUpdate(client, op2, false);
-            deploy(deployment1(), DEP_1 + ".war");
+            container.deploy(deployment1(), DEP_1 + ".war");
             //check if the uri scheme of soap address is modified to http
             checkWSDLUriScheme(client, DEP_1 + ".war", "http");
             if (checkUpdateWithDeployedEndpoint) {
@@ -271,32 +255,29 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
                 applyUpdate(client, opB, true);
                 //check this doesn't apply to endpointed which are deployed before this change
                 checkWSDLUriScheme(client, DEP_1 + ".war", "http");
-                undeploy(DEP_1 + ".war");
-                deploy(deployment1(), DEP_1 + ".war");
+                container.undeploy(DEP_1 + ".war");
+                container.deploy(deployment1(), DEP_1 + ".war");
                 //check this will take effect to redeployed endpoint
                 checkWSDLUriScheme(client, DEP_1 + ".war", "http");
             }
         } finally {
             try {
-                undeploy(DEP_1 + ".war");
+                container.undeploy(DEP_1 + ".war");
             } catch (Throwable t) {
                 //ignore
             }
-            try {
-                //restore the value of wsdl-uri-scheme attribute
-                ModelNode op = null;
-                if ("undefined".equals(initialWsdlUriScheme)) {
-                    op = createOpNode("subsystem=webservices/", UNDEFINE_ATTRIBUTE_OPERATION);
-                    op.get(NAME).set("wsdl-uri-scheme");
-                } else {
-                    op = createOpNode("subsystem=webservices/", WRITE_ATTRIBUTE_OPERATION);
-                    op.get(NAME).set("wsdl-uri-scheme");
-                    op.get(VALUE).set(initialWsdlUriScheme);
-                }
-                applyUpdate(client, op, checkUpdateWithDeployedEndpoint);
-            } finally {
-                managementClient.close();
+            //restore the value of wsdl-uri-scheme attribute
+            ModelNode op = null;
+            if ("undefined".equals(initialWsdlUriScheme)) {
+                op = createOpNode("subsystem=webservices/", UNDEFINE_ATTRIBUTE_OPERATION);
+                op.get(NAME).set("wsdl-uri-scheme");
+            } else {
+                op = createOpNode("subsystem=webservices/", WRITE_ATTRIBUTE_OPERATION);
+                op.get(NAME).set("wsdl-uri-scheme");
+                op.get(VALUE).set(initialWsdlUriScheme);
             }
+            applyUpdate(client, op, checkUpdateWithDeployedEndpoint);
+
         }
     }
 
@@ -309,8 +290,6 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
 
     private void performWsdlPathRewriteRuleAttributeTest(boolean checkUpdateWithDeployedEndpoint) throws Exception {
         Assert.assertTrue(container.isStarted());
-        ManagementClient managementClient = new ManagementClient(TestSuiteEnvironment.getModelControllerClient(),
-                TestSuiteEnvironment.getServerAddress(), TestSuiteEnvironment.getServerPort(), "http-remoting");
 
         ModelControllerClient client = managementClient.getControllerClient();
 
@@ -325,7 +304,7 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
             applyUpdate(client, op, false); //update successful, no need to reload
 
             //now we deploy an endpoint...
-            deploy(deployment1(), DEP_1 + ".war");
+            container.deploy(deployment1(), DEP_1 + ".war");
 
             //verify the updated wsdl host is used...
             URL wsdlURL = new URL(managementClient.getWebUri().toURL(), '/' + DEP_1 + "/POJOService?wsdl");
@@ -344,23 +323,20 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
                 checkWsdl(wsdlURL, expectedContext);
 
                 //and check that still applies even if we undeploy and redeploy the endpoint
-                undeploy(DEP_1 + ".war");
-                deploy(deployment1(), DEP_1 + ".war");
+                container.undeploy(DEP_1 + ".war");
+                container.deploy(deployment1(), DEP_1 + ".war");
                 checkWsdl(wsdlURL, expectedContext);
             }
         } finally {
             try {
-                undeploy(DEP_1 + ".war");
+                container.undeploy(DEP_1 + ".war");
             } catch (Throwable t) {
                 //ignore
             }
-            try {
-                ModelNode op = createOpNode("subsystem=webservices/", UNDEFINE_ATTRIBUTE_OPERATION);
-                op.get(NAME).set("wsdl-path-rewrite-rule");
-                applyUpdate(client, op, checkUpdateWithDeployedEndpoint);
-            } finally {
-                managementClient.close();
-            }
+            ModelNode op = createOpNode("subsystem=webservices/", UNDEFINE_ATTRIBUTE_OPERATION);
+            op.get(NAME).set("wsdl-path-rewrite-rule");
+            applyUpdate(client, op, checkUpdateWithDeployedEndpoint);
+
         }
     }
 
@@ -370,8 +346,8 @@ public class WSAttributesChangesTestCase extends AbstractWSTest {
         if (container.isStarted()) {
             container.stop();
         }
-        if (client!=null){
-            client.close();
+        if (managementClient != null) {
+            managementClient.close();
         }
     }
 
