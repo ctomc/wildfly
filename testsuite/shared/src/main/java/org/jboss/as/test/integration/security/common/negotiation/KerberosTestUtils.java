@@ -30,7 +30,7 @@ import org.apache.commons.lang.SystemUtils;
 import org.jboss.as.network.NetworkUtils;
 import org.jboss.as.test.integration.security.common.Utils;
 import org.jboss.logging.Logger;
-import org.junit.internal.AssumptionViolatedException;
+import org.junit.AssumptionViolatedException;
 
 /**
  * Helper methods for JGSSAPI &amp; SPNEGO &amp; Kerberos testcases. It mainly helps to skip tests on configurations which
