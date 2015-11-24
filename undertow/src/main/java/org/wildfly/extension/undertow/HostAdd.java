@@ -25,7 +25,7 @@ package org.wildfly.extension.undertow;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.jboss.as.controller.AbstractAddStepHandler;
+import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.as.controller.PathAddress;
@@ -44,7 +44,7 @@ import org.jboss.msc.service.ServiceName;
 /**
  * @author <a href="mailto:tomaz.cerar@redhat.com">Tomaz Cerar</a> (c) 2013 Red Hat Inc.
  */
-class HostAdd extends AbstractAddStepHandler {
+class HostAdd extends AbstractBoottimeAddStepHandler {
 
     static final HostAdd INSTANCE = new HostAdd();
 
@@ -53,7 +53,7 @@ class HostAdd extends AbstractAddStepHandler {
     }
 
     @Override
-    protected void performRuntime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final PathAddress address = context.getCurrentAddress();
         final PathAddress serverAddress = address.getParent();
         final PathAddress subsystemAddress = serverAddress.getParent();

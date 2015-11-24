@@ -53,7 +53,7 @@ class HostRemove extends AbstractRemoveStepHandler {
 
     protected void recoverServices(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         if (context.isResourceServiceRestartAllowed()) {
-            HostAdd.INSTANCE.performRuntime(context, operation, model);
+            HostAdd.INSTANCE.performBoottime(context, operation, model);
         } else {
             context.revertReloadRequired();
         }

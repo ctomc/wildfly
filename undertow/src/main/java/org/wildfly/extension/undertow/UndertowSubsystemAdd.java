@@ -22,6 +22,10 @@
 
 package org.wildfly.extension.undertow;
 
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jboss.as.controller.AbstractBoottimeAddStepHandler;
 import org.jboss.as.controller.OperationContext;
 import org.jboss.as.controller.OperationFailedException;
@@ -79,7 +83,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
      * {@inheritDoc}
      */
     @Override
-        protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
+    protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
 
         try {
             Class.forName("org.apache.jasper.compiler.JspRuntimeContext", true, this.getClass().getClassLoader());
@@ -97,6 +101,10 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
         final ModelNode instanceIdModel = UndertowRootDefinition.INSTANCE_ID.resolveModelAttribute(context, model);
         final String instanceId = instanceIdModel.isDefined() ? instanceIdModel.asString() : null;
         ServiceTarget target = context.getServiceTarget();
+
+        ModelNode fullModel = Resource.Tools.readModel(resource, 2);//read first 2 levels which include servers and hosts.
+        final Map<String, Map.Entry<String, String>> defaultDeploymentMappings = prepareDefaultDeploymentModel(fullModel);
+
 
         target.addService(UndertowService.UNDERTOW, new UndertowService(defaultContainer, defaultServer, defaultVirtualHost, instanceId, stats))
                 .setInitialMode(ServiceController.Mode.ACTIVE)
@@ -133,7 +141,7 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
 
                 processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_SERVLET_INIT_DEPLOYMENT, new ServletContainerInitializerDeploymentProcessor());
 
-                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new UndertowDeploymentProcessor(defaultVirtualHost, defaultContainer, defaultServer, defaultSecurityDomain));
+                processorTarget.addDeploymentProcessor(UndertowExtension.SUBSYSTEM_NAME, Phase.INSTALL, Phase.INSTALL_WAR_DEPLOYMENT, new UndertowDeploymentProcessor(defaultVirtualHost, defaultContainer, defaultServer, defaultSecurityDomain, defaultDeploymentMappings));
 
             }
         }, OperationContext.Stage.RUNTIME);
@@ -149,5 +157,21 @@ class UndertowSubsystemAdd extends AbstractBoottimeAddStepHandler {
                 .setInitialMode(ServiceController.Mode.ON_DEMAND)
                 .install();
 
+    }
+
+    private static Map<String, Map.Entry<String, String>> prepareDefaultDeploymentModel(ModelNode model) {
+        Map<String, Map.Entry<String, String>> mappings = new HashMap<>();
+        ModelNode servers = model.get(Constants.SERVER);
+        for (String serverKey : servers.keys()) {
+            ModelNode hosts = servers.get(serverKey).get(Constants.HOST);
+            for (String hostKey : hosts.keys()) {
+                ModelNode host = hosts.get(hostKey);
+                ModelNode defaultModuleName = host.get(Constants.DEFAULT_WEB_MODULE);
+                if (defaultModuleName.isDefined()) {
+                    mappings.put(defaultModuleName.asString(), new AbstractMap.SimpleEntry<>(serverKey, hostKey));
+                }
+            }
+        }
+        return mappings;
     }
 }

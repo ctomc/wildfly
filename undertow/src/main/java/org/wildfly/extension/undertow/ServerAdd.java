@@ -47,7 +47,7 @@ class ServerAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, Resource resource) throws OperationFailedException {
         final PathAddress address = context.getCurrentAddress();
-        final PathAddress parentAddress = address.subAddress(0, address.size() - 1);
+        final PathAddress parentAddress = address.getParent();
         final ModelNode subsystemModel = Resource.Tools.readModel(context.readResourceFromRoot(parentAddress));
 
         final String name = context.getCurrentAddressValue();
