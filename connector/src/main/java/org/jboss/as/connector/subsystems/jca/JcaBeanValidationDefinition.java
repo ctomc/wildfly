@@ -69,7 +69,7 @@ public class JcaBeanValidationDefinition extends SimpleResourceDefinition {
                 .setXmlName("enabled")
                 .build());
 
-        private BeanValidationParameters(SimpleAttributeDefinition attribute) {
+        BeanValidationParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

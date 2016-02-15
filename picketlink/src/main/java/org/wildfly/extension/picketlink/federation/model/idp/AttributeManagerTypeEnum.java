@@ -50,7 +50,7 @@ public enum AttributeManagerTypeEnum {
     private final String alias;
     private final String type;
 
-    private AttributeManagerTypeEnum(String alias, String type) {
+    AttributeManagerTypeEnum(String alias, String type) {
         this.alias = alias;
         this.type = type;
     }

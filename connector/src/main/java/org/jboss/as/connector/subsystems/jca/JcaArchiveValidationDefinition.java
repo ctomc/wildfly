@@ -83,7 +83,7 @@ public class JcaArchiveValidationDefinition extends SimpleResourceDefinition {
                 .setXmlName("fail-on-warn")
                 .build());
 
-        private ArchiveValidationParameters(SimpleAttributeDefinition attribute) {
+        ArchiveValidationParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

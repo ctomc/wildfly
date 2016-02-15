@@ -118,7 +118,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build());
 
 
-        private CcmParameters(SimpleAttributeDefinition attribute) {
+        CcmParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 
@@ -139,7 +139,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build());
 
 
-        private CcmOperations(SimpleOperationDefinition operation) {
+        CcmOperations(SimpleOperationDefinition operation) {
             this.operation = operation;
         }
 

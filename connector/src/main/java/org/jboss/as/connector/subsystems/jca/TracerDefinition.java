@@ -68,7 +68,7 @@ public class TracerDefinition extends SimpleResourceDefinition {
                 .setRestartAllServices()
                 .build());
 
-        private TracerParameters(SimpleAttributeDefinition attribute) {
+        TracerParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

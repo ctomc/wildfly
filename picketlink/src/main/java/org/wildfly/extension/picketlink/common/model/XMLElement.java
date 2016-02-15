@@ -52,7 +52,7 @@ public enum XMLElement {
 
     private final String name;
 
-    private XMLElement(String name) {
+    XMLElement(String name) {
         this.name = name;
     }
 

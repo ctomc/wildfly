@@ -172,7 +172,7 @@ public class InitialContext extends InitialLdapContext {
 
     static class DefaultInitialContext extends NamingContext {
 
-        public DefaultInitialContext(Hashtable<Object,Object> environment) {
+        DefaultInitialContext(Hashtable<Object,Object> environment) {
             super(environment);
         }
 

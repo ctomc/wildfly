@@ -83,7 +83,7 @@ public class JcaBootstrapContextDefinition extends SimpleResourceDefinition {
                 .build());
 
 
-        private BootstrapCtxParameters(SimpleAttributeDefinition attribute) {
+        BootstrapCtxParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

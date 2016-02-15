@@ -115,7 +115,7 @@ public final class JndiPermission extends Permission
         private String actionName;
         private int mask;
 
-        private Action(String actionName, int mask) {
+        Action(String actionName, int mask) {
             this.actionName = actionName;
             this.mask = mask;
         }
@@ -587,7 +587,7 @@ final class JndiPermissionCollection extends PermissionCollection implements
     /**
      * Create an empty JndiPermissions object.
      */
-    public JndiPermissionCollection() {
+    JndiPermissionCollection() {
         perms = new ArrayList<JndiPermission>();
     }
 

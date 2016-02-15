@@ -114,7 +114,7 @@ public class StrictMaxPoolResourceDefinition extends SimpleResourceDefinition {
         NONE(NONE_VALUE), FROM_WORKER_POOLS(FROM_WORKER_POOLS_VALUE), FROM_CPU_COUNT(FROM_CPU_COUNT_VALUE);
         private String value;
 
-        private DeriveSize(String value) {
+        DeriveSize(String value) {
             this.value = value;
         }
 

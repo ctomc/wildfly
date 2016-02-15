@@ -64,7 +64,7 @@ public class TxStatsHandler extends AbstractRuntimeOnlyHandler {
             }
         }
         final AttributeDefinition definition;
-        private TxStat(final AttributeDefinition definition) {
+        TxStat(final AttributeDefinition definition) {
             this.definition = definition;
         }
 

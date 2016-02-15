@@ -66,7 +66,7 @@ public enum HandlerTypeEnum {
     private final String alias;
     private final String type;
 
-    private HandlerTypeEnum(String alias, String type) {
+    HandlerTypeEnum(String alias, String type) {
         this.alias = alias;
         this.type = type;
     }

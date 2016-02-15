@@ -72,7 +72,7 @@ public final class JBossServiceXmlDescriptor implements Serializable {
 
         private final String value;
 
-        private ControllerMode(final String value) {
+        ControllerMode(final String value) {
             this.value = value;
         }
 

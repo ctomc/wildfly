@@ -163,7 +163,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
             };
         }
 
-        private DWmParameters(AttributeDefinition attribute) {
+        DWmParameters(AttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

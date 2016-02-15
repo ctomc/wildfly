@@ -178,7 +178,7 @@ abstract class ListenerResourceDefinition extends PersistentResourceDefinition {
 
         final AttributeDefinition definition;
 
-        private ConnectorStat(final AttributeDefinition definition) {
+        ConnectorStat(final AttributeDefinition definition) {
             this.definition = definition;
         }
 

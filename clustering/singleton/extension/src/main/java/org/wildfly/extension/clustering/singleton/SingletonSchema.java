@@ -36,7 +36,7 @@ public enum SingletonSchema implements Schema<SingletonSchema> {
     private final int major;
     private final int minor;
 
-    private SingletonSchema(int major, int minor) {
+    SingletonSchema(int major, int minor) {
         this.major = major;
         this.minor = minor;
     }

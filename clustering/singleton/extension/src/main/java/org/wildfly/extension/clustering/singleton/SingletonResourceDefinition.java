@@ -50,7 +50,7 @@ public class SingletonResourceDefinition extends SubsystemResourceDefinition {
         ;
         private final SimpleAttributeDefinition definition;
 
-        private Attribute(String name, ModelType type) {
+        Attribute(String name, ModelType type) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type).setFlags(Flag.RESTART_RESOURCE_SERVICES).build();
         }
 

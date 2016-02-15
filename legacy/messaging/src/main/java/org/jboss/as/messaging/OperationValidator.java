@@ -59,7 +59,7 @@ interface OperationValidator {
      */
     void validateAndSet(ModelNode operation, ModelNode subModel) throws OperationFailedException;
 
-    static class AttributeDefinitionOperationValidator implements OperationValidator {
+    class AttributeDefinitionOperationValidator implements OperationValidator {
 
         private final AttributeDefinition[] attributes;
         public AttributeDefinitionOperationValidator(AttributeDefinition... attributes) {

@@ -50,7 +50,7 @@ public enum RoleGeneratorTypeEnum {
     private final String alias;
     private final String type;
 
-    private RoleGeneratorTypeEnum(String alias, String type) {
+    RoleGeneratorTypeEnum(String alias, String type) {
         this.alias = alias;
         this.type = type;
     }
