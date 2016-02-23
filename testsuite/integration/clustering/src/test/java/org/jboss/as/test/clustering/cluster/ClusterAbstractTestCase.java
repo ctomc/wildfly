@@ -54,7 +54,7 @@ import org.junit.BeforeClass;
  * @author Radoslav Husar
  * @version Jul 2013
  */
-public abstract class ClusterAbstractTestCase implements ClusteringTestConstants {
+public abstract class  ClusterAbstractTestCase implements ClusteringTestConstants {
 
     protected static final Logger log = Logger.getLogger(ClusterAbstractTestCase.class);
     private static final RoutingSupport routing = new SimpleRoutingSupport();
