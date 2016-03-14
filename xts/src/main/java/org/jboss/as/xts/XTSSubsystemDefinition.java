@@ -66,6 +66,7 @@ public class XTSSubsystemDefinition extends SimpleResourceDefinition {
             new SimpleAttributeDefinitionBuilder(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION, ModelType.BOOLEAN, true)
                     .setAllowExpression(false)
                     .setXmlName(Attribute.ENABLED.getLocalName())
+                    .setDefaultValue(new ModelNode(false))
                     .setFlags(AttributeAccess.Flag.RESTART_JVM)
                     .build();
 

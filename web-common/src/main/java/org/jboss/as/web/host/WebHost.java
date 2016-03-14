@@ -1,5 +1,7 @@
 package org.jboss.as.web.host;
 
+import java.util.Set;
+
 import org.jboss.msc.service.ServiceName;
 
 /**
@@ -10,5 +12,9 @@ public interface WebHost {
     ServiceName SERVICE_NAME = ServiceName.JBOSS.append("web", "common", "host");
 
     WebDeploymentController addWebDeployment(WebDeploymentBuilder webDeploymentBuilder) throws Exception;
+
+    String getHostName();
+
+    Set<String> getHostAliases();
 
 }

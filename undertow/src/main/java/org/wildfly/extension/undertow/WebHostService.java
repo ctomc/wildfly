@@ -21,7 +21,9 @@
  */
 package org.wildfly.extension.undertow;
 
+import java.net.SocketAddress;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.Servlet;
 
 import io.undertow.server.HttpHandler;
@@ -85,6 +87,20 @@ class WebHostService implements Service<WebHost>, WebHost {
         }
 
         return new WebDeploymentControllerImpl(d);
+    }
+
+    @Override
+    public String getHostName() {
+        return host.getValue().getName();
+    }
+
+    @Override
+    public Set<String> getHostAliases() {
+        return host.getValue().getAllAliases();
+    }
+
+    public Set<SocketAddress> getListeningAddresses(){
+        server.getValue().getListeners().get(0).getBinding().getValue().getSocketAddress()
     }
 
     private class WebDeploymentControllerImpl implements WebDeploymentController {

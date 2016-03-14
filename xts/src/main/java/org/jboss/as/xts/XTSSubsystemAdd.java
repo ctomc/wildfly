@@ -178,6 +178,7 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
     @Override
     protected void performBoottime(OperationContext context, ModelNode operation, ModelNode model) throws OperationFailedException {
         final String hostName = HOST_NAME.resolveModelAttribute(context, model).asString();
+        final boolean isDefaultContextPropagation = DEFAULT_CONTEXT_PROPAGATION.resolveModelAttribute(context, model).asBoolean();
 
         final ModelNode coordinatorURLAttribute = ENVIRONMENT_URL.resolveModelAttribute(context, model);
         String coordinatorURL = coordinatorURLAttribute.isDefined() ? coordinatorURLAttribute.asString() : null;
@@ -208,9 +209,6 @@ class XTSSubsystemAdd extends AbstractBoottimeAddStepHandler {
         if (coordinatorURL != null) {
             XtsAsLogger.ROOT_LOGGER.debugf("nodeIdentifier=%s%n", coordinatorURL);
         }
-
-        final boolean isDefaultContextPropagation = model.hasDefined(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION)
-                ? model.get(CommonAttributes.DEFAULT_CONTEXT_PROPAGATION).asBoolean() : false;
 
         context.addStep(new AbstractDeploymentChainStep() {
             protected void execute(DeploymentProcessorTarget processorTarget) {
