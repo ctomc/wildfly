@@ -118,12 +118,14 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
         //Do a normal transformation test containing parts of the subsystem that work everywhere
         String subsystemXml = readResource("subsystem-transformers.xml");
         //Use the non-runtime version of the extension which will happen on the HC
-        KernelServicesBuilder builder = createKernelServicesBuilder(AdditionalInitialization.MANAGEMENT)
+        KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization())
                 .setSubsystemXml(subsystemXml);
 
         // Add legacy subsystems
-        builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
-                .addMavenResourceURL("org.jboss.as:jboss-as-ee:" + controllerVersion.getMavenGavVersion());
+        builder.createLegacyKernelServicesBuilder(createAdditionalInitialization(), controllerVersion, modelVersion)
+                .configureReverseControllerCheck(createAdditionalInitialization(), null)
+                .addMavenResourceURL("org.jboss.as:jboss-as-ee:" + controllerVersion.getMavenGavVersion())
+                .addMavenResourceURL("org.jboss.spec.javax.annotation:jboss-annotations-api_1.2_spec:1.0.0.Final");
 
         KernelServices mainServices = builder.build();
         KernelServices legacyServices = mainServices.getLegacyServices(modelVersion);
