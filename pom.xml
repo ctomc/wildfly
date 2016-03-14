@@ -217,7 +217,7 @@
         <version.org.syslog4j>0.9.30</version.org.syslog4j>
         <version.org.wildfly.build-tools>1.1.3.Final</version.org.wildfly.build-tools>
         <version.org.wildfly.checkstyle-config>1.0.4.Final</version.org.wildfly.checkstyle-config>
-        <version.org.wildfly.core>2.1.0.CR2</version.org.wildfly.core>
+        <version.org.wildfly.core>2.1.0.CR3-SNAPSHOT</version.org.wildfly.core>
         <version.org.wildfly.arquillian>1.0.2.Final</version.org.wildfly.arquillian>
         <version.org.yaml.snakeyaml>1.15</version.org.yaml.snakeyaml>
         <version.sun.jaxb>2.2.11.jbossorg-1</version.sun.jaxb>
@@ -237,7 +237,7 @@
 
         <!-- Surefire args -->
         <surefire.jpda.args/>
-        <surefire.extra.args/>
+        <surefire.extra.args>-XaddExports:java.xml/com.sun.org.apache.xerces.internal.jaxp=ALL-UNNAMED,java.xml/com.sun.org.apache.xalan.internal.xsltc.trax=ALL-UNNAMED,java.xml/com.sun.org.apache.xpath.internal.jaxp=ALL-UNNAMED,java.xml/com.sun.xml.internal.stream.events=ALL-UNNAMED,java.xml/com.sun.xml.internal.stream=ALL-UNNAMED,java.xml/com.sun.org.apache.xerces.internal.jaxp.datatype=ALL-UNNAMED,java.xml/com.sun.org.apache.xerces.internal.jaxp.validation=ALL-UNNAMED,java.xml/com.sun.org.apache.xerces.internal.parsers=ALL-UNNAMED,java.xml/org.xml.sax=ALL-UNNAMED,java.xml/javax.xml.parsers=ALL-UNNAMED</surefire.extra.args>
         <surefire.system.args>-Duser.region=US -Duser.language=en -XX:MaxMetaspaceSize=256m ${surefire.jpda.args} ${surefire.extra.args}</surefire.system.args>
         <!-- Checkstyle configuration -->
         <linkXRef>false</linkXRef>
