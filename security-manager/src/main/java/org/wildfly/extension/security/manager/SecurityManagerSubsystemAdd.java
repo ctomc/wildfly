@@ -26,6 +26,9 @@ package org.wildfly.extension.security.manager;
 import static org.wildfly.extension.security.manager.Constants.PERMISSION_ACTIONS;
 import static org.wildfly.extension.security.manager.Constants.PERMISSION_MODULE;
 import static org.wildfly.extension.security.manager.Constants.PERMISSION_NAME;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.DEPLOYMENT_PERMISSIONS_PATH;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.MAXIMUM_PERMISSIONS;
+import static org.wildfly.extension.security.manager.DeploymentPermissionsResourceDefinition.MINIMUM_PERMISSIONS;
 
 import java.security.Permission;
 import java.util.ArrayList;
@@ -98,14 +101,16 @@ class SecurityManagerSubsystemAdd extends AbstractAddStepHandler {
     protected void launchServices(final OperationContext context, final ModelNode node)
             throws OperationFailedException {
 
-        // get the minimum set of deployment permissions.
-        final ModelNode minimumPermissionsNode = DeploymentPermissionsResourceDefinition.MINIMUM_PERMISSIONS.
-                resolveModelAttribute(context, node.get(DeploymentPermissionsResourceDefinition.DEPLOYMENT_PERMISSIONS_PATH.getKeyValuePair()));
-        final List<PermissionFactory> minimumSet = this.retrievePermissionSet(context, minimumPermissionsNode);
+        ModelNode deploymentPermissionModel = node.get(DEPLOYMENT_PERMISSIONS_PATH.getKeyValuePair());
+        final ModelNode minimumPermissionsNode = MINIMUM_PERMISSIONS.resolveModelAttribute(context, deploymentPermissionModel);
+        if (!minimumPermissionsNode.isDefined()){
+            minimumPermissionsNode.setEmptyList();//workaround for WFCORE-1440
+        }
+        final ModelNode maximumPermissionsNode = MAXIMUM_PERMISSIONS.resolveModelAttribute(context, deploymentPermissionModel);
 
+        // get the minimum set of deployment permissions.
+        final List<PermissionFactory> minimumSet = this.retrievePermissionSet(context, minimumPermissionsNode);
         // get the maximum set of deployment permissions.
-        final ModelNode maximumPermissionsNode = DeploymentPermissionsResourceDefinition.MAXIMUM_PERMISSIONS.
-                resolveModelAttribute(context, node.get(DeploymentPermissionsResourceDefinition.DEPLOYMENT_PERMISSIONS_PATH.getKeyValuePair()));
         final List<PermissionFactory> maximumSet = this.retrievePermissionSet(context, maximumPermissionsNode);
 
         // validate the configured permissions - the mininum set must be implied by the maximum set.

@@ -80,10 +80,13 @@ class DeploymentPermissionsResourceDefinition extends PersistentResourceDefiniti
     private static final ObjectTypeAttributeDefinition PERMISSIONS_VALUE_TYPE =
             ObjectTypeAttributeDefinition.Builder.of(PERMISSION, CLASS, NAME, ACTIONS, MODULE).build();
 
+    private static final ModelNode DEFAULT_MINIMUM_SET;
     private static final ModelNode DEFAULT_MAXIMUM_SET;
     static {
         DEFAULT_MAXIMUM_SET = new ModelNode();
         DEFAULT_MAXIMUM_SET.add(new ModelNode().set(PERMISSION_CLASS, "java.security.AllPermission"));
+        DEFAULT_MINIMUM_SET = new ModelNode();
+        DEFAULT_MINIMUM_SET.setEmptyList();
     };
 
     static final AttributeDefinition MAXIMUM_PERMISSIONS =
@@ -97,7 +100,7 @@ class DeploymentPermissionsResourceDefinition extends PersistentResourceDefiniti
     static final AttributeDefinition MINIMUM_PERMISSIONS =
             ObjectListAttributeDefinition.Builder.of(Constants.MINIMUM_PERMISSIONS, PERMISSIONS_VALUE_TYPE)
                     .setAllowNull(true)
-                    .setDefaultValue(new ModelNode().setEmptyList())
+                    .setDefaultValue(DEFAULT_MINIMUM_SET)
                     .setFlags(AttributeAccess.Flag.RESTART_ALL_SERVICES)
                     .setXmlName(MINIMUM_SET)
                     .build();

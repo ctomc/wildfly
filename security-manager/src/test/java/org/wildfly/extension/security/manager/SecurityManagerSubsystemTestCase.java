@@ -24,7 +24,10 @@ package org.wildfly.extension.security.manager;
 
 import java.io.IOException;
 
+import org.jboss.as.controller.RunningMode;
 import org.jboss.as.subsystem.test.AbstractSubsystemBaseTest;
+import org.jboss.as.subsystem.test.AdditionalInitialization;
+import org.junit.Test;
 
 /**
  * Security Manager subsystem tests.
@@ -50,8 +53,23 @@ public class SecurityManagerSubsystemTestCase extends AbstractSubsystemBaseTest 
 
     @Override
     protected String[] getSubsystemTemplatePaths() throws IOException {
-        return new String[] {
+        return new String[]{
                 "/subsystem-templates/security-manager.xml"
+        };
+    }
+
+    @Test
+    public void testEmptyConfig() throws Exception {
+        standardSubsystemTest("security-manager-empty.xml");
+    }
+
+    @Override
+    protected AdditionalInitialization createAdditionalInitialization() {
+        return new AdditionalInitialization() {
+            @Override
+            protected RunningMode getRunningMode() {
+                return RunningMode.NORMAL;
+            }
         };
     }
 }
