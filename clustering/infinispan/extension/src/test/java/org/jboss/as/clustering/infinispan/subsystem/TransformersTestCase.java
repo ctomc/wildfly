@@ -54,6 +54,7 @@ import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -72,15 +73,15 @@ import org.junit.Test;
 public class TransformersTestCase extends OperationTestCaseBase {
 
     private static String formatSubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.wildfly:wildfly-clustering-infinispan:%s", version);
+        return formatArtifact("%s:wildfly-clustering-infinispan:%s", version);
     }
 
     private static String formatLegacySubsystemArtifact(ModelTestControllerVersion version) {
-        return formatArtifact("org.jboss.as:jboss-as-clustering-infinispan:%s", version);
+        return formatArtifact("%s:jboss-as-clustering-infinispan:%s", version);
     }
 
     private static String formatArtifact(String pattern, ModelTestControllerVersion version) {
-        return String.format(pattern, version.getMavenGavVersion());
+        return String.format(pattern, version.getMavenGroupId(), version.getMavenGavVersion());
     }
 
     @Override
@@ -115,11 +116,11 @@ public class TransformersTestCase extends OperationTestCaseBase {
     public void testTransformerWF800() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_0_0_FINAL;
         this.testTransformation(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
-                formatArtifact("org.wildfly:wildfly-clustering-common:%s", version),
+                formatArtifact("%s:wildfly-clustering-common:%s", version),
                 "org.infinispan:infinispan-core:6.0.1.Final",
                 "org.infinispan:infinispan-commons:6.0.1.Final",
                 "org.infinispan:infinispan-cachestore-jdbc:6.0.1.Final",
-                formatArtifact("org.wildfly:wildfly-clustering-jgroups:%s", version),
+                formatArtifact("%s:wildfly-clustering-jgroups:%s", version),
                 "org.jgroups:jgroups:3.4.2.Final"
         );
     }
@@ -128,11 +129,11 @@ public class TransformersTestCase extends OperationTestCaseBase {
     public void testTransformerWF810() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_1_0_FINAL;
         this.testTransformation(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
-                formatArtifact("org.wildfly:wildfly-clustering-common:%s", version),
+                formatArtifact("%s:wildfly-clustering-common:%s", version),
                 "org.infinispan:infinispan-core:6.0.2.Final",
                 "org.infinispan:infinispan-commons:6.0.2.Final",
                 "org.infinispan:infinispan-cachestore-jdbc:6.0.2.Final",
-                formatArtifact("org.wildfly:wildfly-clustering-jgroups:%s", version),
+                formatArtifact("%s:wildfly-clustering-jgroups:%s", version),
                 "org.jgroups:jgroups:3.4.3.Final"
         );
     }
@@ -141,12 +142,28 @@ public class TransformersTestCase extends OperationTestCaseBase {
     public void testTransformerWF820() throws Exception {
         ModelTestControllerVersion version = ModelTestControllerVersion.WILDFLY_8_2_0_FINAL;
         this.testTransformation(InfinispanModel.VERSION_2_0_0, version, formatSubsystemArtifact(version),
-                formatArtifact("org.wildfly:wildfly-clustering-common:%s", version),
+                formatArtifact("%s:wildfly-clustering-common:%s", version),
                 "org.infinispan:infinispan-core:6.0.2.Final",
                 "org.infinispan:infinispan-commons:6.0.2.Final",
                 "org.infinispan:infinispan-cachestore-jdbc:6.0.2.Final",
-                formatArtifact("org.wildfly:wildfly-clustering-jgroups:%s", version),
+                formatArtifact("%s:wildfly-clustering-jgroups:%s", version),
                 "org.jgroups:jgroups:3.4.5.Final"
+        );
+    }
+
+    @Test
+    @Ignore("needs transformers to be written to pass.")
+    public void testTransformerEAP700() throws Exception {
+        ModelTestControllerVersion version = ModelTestControllerVersion.EAP_7_0_0;
+        this.testTransformation(InfinispanModel.VERSION_4_0_0, version,
+                formatArtifact("%s:wildfly-clustering-infinispan-extension:%s",version),
+                formatArtifact("%s:wildfly-clustering-service:%s", version),
+                formatArtifact("%s:wildfly-clustering-common:%s", version),
+                "org.infinispan:infinispan-core:8.1.4.Final",
+                "org.infinispan:infinispan-commons:8.1.4.Final",
+                "org.infinispan:infinispan-cachestore-jdbc:8.1.4.Final",
+                formatArtifact("%s:wildfly-clustering-jgroups-extension:%s", version),
+                "org.jgroups:jgroups:3.6.9.Final"
         );
     }
 
