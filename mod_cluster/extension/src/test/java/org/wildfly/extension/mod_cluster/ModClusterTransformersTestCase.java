@@ -24,6 +24,10 @@ package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.ModelVersion;
 import org.jboss.as.controller.PathAddress;
+import org.jboss.as.controller.capability.registry.RuntimeCapabilityRegistry;
+import org.jboss.as.controller.extension.ExtensionRegistry;
+import org.jboss.as.controller.registry.ManagementResourceRegistration;
+import org.jboss.as.controller.registry.Resource;
 import org.jboss.as.model.test.FailedOperationTransformationConfig;
 import org.jboss.as.model.test.ModelTestControllerVersion;
 import org.jboss.as.model.test.ModelTestUtils;
@@ -35,6 +39,10 @@ import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
 import org.junit.Assert;
 import org.junit.Test;
+import org.wildfly.extension.undertow.ListenerService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Radoslav Husar
@@ -254,9 +262,22 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 super.setupController(controllerInitializer);
 
                 controllerInitializer.addSocketBinding("modcluster", 0); // "224.0.1.105", "23364"
+                controllerInitializer.addSocketBinding("ajp", 8009);
                 controllerInitializer.addRemoteOutboundSocketBinding("proxy1", "localhost", 6666);
                 controllerInitializer.addRemoteOutboundSocketBinding("proxy2", "localhost", 6766);
                 controllerInitializer.addRemoteOutboundSocketBinding("proxy3", "localhost", 6866);
+            }
+
+            @Override
+            protected void initializeExtraSubystemsAndModel(ExtensionRegistry extensionRegistry, Resource rootResource, ManagementResourceRegistration rootRegistration, RuntimeCapabilityRegistry capabilityRegistry) {
+                super.initializeExtraSubystemsAndModel(extensionRegistry, rootResource, rootRegistration, capabilityRegistry);
+
+                // The capability base name comes from org.wildfly.extension.undertow.ListenerResourceDefinition
+                // AJP is used because it's the specified connector for the test subsystem
+                Map<String, Class> capabilities = new HashMap<>();
+                capabilities.put("org.wildfly.undertow.listener.ajp", ListenerService.class);
+
+                AdditionalInitialization.registerServiceCapabilities(capabilityRegistry, capabilities);
             }
         };
     }

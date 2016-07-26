@@ -23,7 +23,6 @@
 package org.wildfly.extension.mod_cluster;
 
 import org.jboss.as.controller.AbstractAddStepHandler;
-import org.jboss.as.controller.AttributeDefinition;
 import org.jboss.as.controller.OperationFailedException;
 import org.jboss.dmr.ModelNode;
 
@@ -35,6 +34,7 @@ public class ModClusterConfigAdd extends AbstractAddStepHandler {
     static final ModClusterConfigAdd INSTANCE = new ModClusterConfigAdd();
 
     private ModClusterConfigAdd() {
+        super(ModClusterConfigResourceDefinition.ATTRIBUTES);
     }
 
     /**
@@ -47,9 +47,7 @@ public class ModClusterConfigAdd extends AbstractAddStepHandler {
      */
     @Override
     protected void populateModel(ModelNode operation, ModelNode model) throws OperationFailedException {
-        for (AttributeDefinition attribute : ModClusterConfigResourceDefinition.ATTRIBUTES) {
-            attribute.validateAndSet(operation, model);
-        }
+        super.populateModel(operation, model);
         ModClusterConfigResourceDefinition.SIMPLE_LOAD_PROVIDER.validateAndSet(operation, model);
     }
 }

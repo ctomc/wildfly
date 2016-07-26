@@ -36,6 +36,7 @@ import org.jboss.as.controller.SimpleOperationDefinitionBuilder;
 import org.jboss.as.controller.SimpleResourceDefinition;
 import org.jboss.as.controller.StringListAttributeDefinition;
 import org.jboss.as.controller.access.management.SensitiveTargetAccessConstraintDefinition;
+import org.jboss.as.controller.capability.RuntimeCapability;
 import org.jboss.as.controller.client.helpers.MeasurementUnit;
 import org.jboss.as.controller.descriptions.ResourceDescriptionResolver;
 import org.jboss.as.controller.operations.validation.EnumValidator;
@@ -63,6 +64,11 @@ import java.util.Map;
 class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
 
     static final PathElement PATH = PathElement.pathElement(CommonAttributes.MOD_CLUSTER_CONFIG, CommonAttributes.CONFIGURATION);
+    private static final String LISTENER_CAPABILITY_NAME = "org.wildfly.undertow.listener";
+
+    private static final String MODCLUSTER_CONFIG_CAPABILITY_NAME = "org.wildfly.modcluster.config";
+    protected static final RuntimeCapability<Void> MODCLUSTER_CONFIG_CAPABILITY = RuntimeCapability.Builder.of(MODCLUSTER_CONFIG_CAPABILITY_NAME, true)
+            .build();
 
     static final SimpleAttributeDefinition ADVERTISE_SOCKET = SimpleAttributeDefinitionBuilder.create(CommonAttributes.ADVERTISE_SOCKET, ModelType.STRING, true)
             .setRestartAllServices()
@@ -70,6 +76,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             .build();
 
     static final SimpleAttributeDefinition CONNECTOR = SimpleAttributeDefinitionBuilder.create(CommonAttributes.CONNECTOR, ModelType.STRING, false)
+            .setCapabilityReference(LISTENER_CAPABILITY_NAME, MODCLUSTER_CONFIG_CAPABILITY)
             .setRestartAllServices()
             .build();
 
@@ -339,10 +346,10 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
     }
 
     public ModClusterConfigResourceDefinition() {
-        super(PATH,
-                ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION),
-                ModClusterConfigAdd.INSTANCE,
-                new ReloadRequiredRemoveStepHandler());
+        super(new Parameters(PATH, ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION))
+                .setAddHandler(ModClusterConfigAdd.INSTANCE)
+                .setRemoveHandler(new ReloadRequiredRemoveStepHandler())
+                .setCapabilities(MODCLUSTER_CONFIG_CAPABILITY));
     }
 
     @Override
@@ -384,5 +391,10 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
         resourceRegistration.registerOperationHandler(addCustomDef, ModClusterAddCustomMetric.INSTANCE);
         resourceRegistration.registerOperationHandler(removeMetricDef, ModClusterRemoveMetric.INSTANCE);
         resourceRegistration.registerOperationHandler(removeCustomDef, ModClusterRemoveCustomMetric.INSTANCE);
+    }
+
+    @Override
+    public void registerCapabilities(ManagementResourceRegistration resourceRegistration) {
+        resourceRegistration.registerCapability(MODCLUSTER_CONFIG_CAPABILITY);
     }
 }
