@@ -34,9 +34,6 @@ import org.jboss.as.subsystem.test.AdditionalInitialization;
 import org.jboss.as.subsystem.test.KernelServices;
 import org.jboss.as.subsystem.test.KernelServicesBuilder;
 import org.jboss.dmr.ModelNode;
-import org.jboss.modcluster.config.MCMPHandlerConfiguration;
-import org.jboss.msc.service.ServiceController;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**

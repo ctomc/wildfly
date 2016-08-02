@@ -102,6 +102,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
                 .setSubsystemXml(subsystemXml);
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL(dependencies)
+                .configureReverseControllerCheck(createAdditionalInitialization(), null)
                 .setExtensionClassName(extensionClassName);
 
         KernelServices mainServices = builder.build();
@@ -149,6 +150,7 @@ public class ModClusterTransformersTestCase extends AbstractSubsystemTest {
         KernelServicesBuilder builder = createKernelServicesBuilder(createAdditionalInitialization());
         builder.createLegacyKernelServicesBuilder(null, controllerVersion, modelVersion)
                 .addMavenResourceURL(dependencies)
+                .configureReverseControllerCheck(createAdditionalInitialization(), null)
                 .setExtensionClassName(extensionClassName);
 
         KernelServices mainServices = builder.build();

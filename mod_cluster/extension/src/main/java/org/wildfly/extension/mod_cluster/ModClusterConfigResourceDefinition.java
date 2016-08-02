@@ -292,6 +292,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
             CONNECTOR, // not in the 1.0 xsd
             SESSION_DRAINING_STRATEGY, // not in the 1.1 xsd
             STATUS_INTERVAL, // since 2.0 xsd
+            SIMPLE_LOAD_PROVIDER
     };
 
 
@@ -361,7 +362,6 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
                 resourceRegistration.registerReadWriteAttribute(attr, null, new ReloadRequiredWriteAttributeHandler(attr));
             }
         }
-        resourceRegistration.registerReadWriteAttribute(SIMPLE_LOAD_PROVIDER, null, new ReloadRequiredWriteAttributeHandler(SIMPLE_LOAD_PROVIDER));
     }
 
     @Override
