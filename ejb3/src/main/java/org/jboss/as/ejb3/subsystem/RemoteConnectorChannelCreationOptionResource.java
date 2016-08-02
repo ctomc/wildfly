@@ -88,7 +88,7 @@ class RemoteConnectorChannelCreationOptionResource extends SimpleResourceDefinit
      */
     private static class ChannelCreationOptionWriteAttributeHandler extends RestartParentWriteAttributeHandler {
 
-        public ChannelCreationOptionWriteAttributeHandler(final AttributeDefinition attributeDefinition) {
+        ChannelCreationOptionWriteAttributeHandler(final AttributeDefinition attributeDefinition) {
             super(EJB3SubsystemModel.REMOTE, attributeDefinition);
         }
 

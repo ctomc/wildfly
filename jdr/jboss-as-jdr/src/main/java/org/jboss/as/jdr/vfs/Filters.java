@@ -119,12 +119,12 @@ public class Filters {
 
         private final List<WildcardPattern> patterns;
 
-        public WildcardBlacklistFilter() {
+        WildcardBlacklistFilter() {
             patterns = new ArrayList<WildcardPattern>();
             patterns.add(new WildcardPattern("*-users.properties"));
         }
 
-        public WildcardBlacklistFilter(final String... patterns) {
+        WildcardBlacklistFilter(final String... patterns) {
             this.patterns = new ArrayList<WildcardPattern>(patterns.length);
             add(patterns);
         }
@@ -149,11 +149,11 @@ public class Filters {
     private static class RegexBlacklistFilter implements BlacklistFilter {
         private final List<Pattern> patterns;
 
-        public RegexBlacklistFilter(){
+        RegexBlacklistFilter(){
             this.patterns = Arrays.asList(Pattern.compile(".*-users.properties"));
         }
 
-        public RegexBlacklistFilter(final String... patterns){
+        RegexBlacklistFilter(final String... patterns){
             this.patterns = new ArrayList<Pattern>(patterns.length);
             add(patterns);
         }

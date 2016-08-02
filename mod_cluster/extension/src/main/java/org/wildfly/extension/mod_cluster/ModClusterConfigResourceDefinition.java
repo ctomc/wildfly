@@ -338,7 +338,7 @@ class ModClusterConfigResourceDefinition extends SimpleResourceDefinition {
         ModClusterSSLResourceDefinition.buildTransformation(version, builder);
     }
 
-    public ModClusterConfigResourceDefinition() {
+    ModClusterConfigResourceDefinition() {
         super(PATH,
                 ModClusterExtension.getResourceDescriptionResolver(CommonAttributes.CONFIGURATION),
                 ModClusterConfigAdd.INSTANCE,

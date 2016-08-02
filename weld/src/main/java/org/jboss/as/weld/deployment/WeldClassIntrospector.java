@@ -130,7 +130,7 @@ public class WeldClassIntrospector implements EEClassIntrospector, Service<EECla
         private final CreationalContext ctx;
         private final Object instance;
 
-        public WeldManagedReference(InjectionTarget injectionTarget, CreationalContext ctx, Object instance) {
+        WeldManagedReference(InjectionTarget injectionTarget, CreationalContext ctx, Object instance) {
             this.injectionTarget = injectionTarget;
             this.ctx = ctx;
             this.instance = instance;

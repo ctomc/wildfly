@@ -150,7 +150,7 @@ public class InfinispanCacheDeploymentListener implements EventListener {
 
     private static class CacheWrapper implements Wrapper {
 
-        public CacheWrapper(EmbeddedCacheManager embeddedCacheManager, ServiceName serviceName) {
+        CacheWrapper(EmbeddedCacheManager embeddedCacheManager, ServiceName serviceName) {
             this.embeddedCacheManager = embeddedCacheManager;
             this.serviceName = serviceName;
         }

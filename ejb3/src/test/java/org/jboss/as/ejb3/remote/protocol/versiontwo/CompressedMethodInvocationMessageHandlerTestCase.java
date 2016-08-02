@@ -259,7 +259,7 @@ public class CompressedMethodInvocationMessageHandlerTestCase {
 
         private OutputStream wrappedOutputStream;
 
-        public MockedMessageOutputStream(OutputStream outputStream) {
+        MockedMessageOutputStream(OutputStream outputStream) {
             wrappedOutputStream = outputStream;
         }
 
@@ -357,7 +357,7 @@ public class CompressedMethodInvocationMessageHandlerTestCase {
 
         private T result;
 
-        public CompletedFuture(T result) {
+        CompletedFuture(T result) {
             this.result = result;
         }
 

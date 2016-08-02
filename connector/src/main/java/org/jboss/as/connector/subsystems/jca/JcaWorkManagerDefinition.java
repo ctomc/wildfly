@@ -88,7 +88,7 @@ public class JcaWorkManagerDefinition extends SimpleResourceDefinition {
                 .build());
 
 
-        private WmParameters(SimpleAttributeDefinition attribute) {
+        WmParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 

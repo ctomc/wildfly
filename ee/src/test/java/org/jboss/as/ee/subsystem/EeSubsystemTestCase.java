@@ -295,7 +295,7 @@ public class EeSubsystemTestCase extends AbstractSubsystemBaseTest {
 
     private static final class GlobalModulesConfig extends AttributesPathAddressConfig<GlobalModulesConfig> {
 
-        public GlobalModulesConfig() {
+        GlobalModulesConfig() {
             super(GlobalModulesDefinition.INSTANCE.getName());
         }
 

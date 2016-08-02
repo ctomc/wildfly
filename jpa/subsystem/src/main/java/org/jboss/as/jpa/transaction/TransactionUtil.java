@@ -149,7 +149,7 @@ public class TransactionUtil {
         private transient boolean transactionDisassociatedFromApplication = false;
         private transient boolean afterCompletionCalled = false;
 
-        public SessionSynchronization(EntityManager session, String scopedPuName) {
+        SessionSynchronization(EntityManager session, String scopedPuName) {
             this.manager = session;
             this.scopedPuName = scopedPuName;
         }

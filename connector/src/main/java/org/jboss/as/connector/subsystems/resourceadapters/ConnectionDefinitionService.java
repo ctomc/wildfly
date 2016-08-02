@@ -43,7 +43,7 @@ final class ConnectionDefinitionService implements Service<ModifiableConnDef> {
 
 
     /** create an instance **/
-    public ConnectionDefinitionService(ModifiableConnDef value) {
+    ConnectionDefinitionService(ModifiableConnDef value) {
         this.value = value;
     }
 

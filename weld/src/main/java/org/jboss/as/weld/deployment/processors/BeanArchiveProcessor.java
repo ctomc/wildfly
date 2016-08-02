@@ -167,7 +167,7 @@ public class BeanArchiveProcessor implements DeploymentUnitProcessor {
         private final Multimap<ResourceRoot, EJBComponentDescription> ejbComponentDescriptions = HashMultimap.create();
         private final List<ComponentDescription> implicitComponentDescriptions = new ArrayList<ComponentDescription>();
 
-        public Components(DeploymentUnit deploymentUnit, Map<ResourceRoot, Index> indexes) {
+        Components(DeploymentUnit deploymentUnit, Map<ResourceRoot, Index> indexes) {
             for (ComponentDescription component : deploymentUnit.getAttachment(org.jboss.as.ee.component.Attachments.EE_MODULE_DESCRIPTION).getComponentDescriptions()) {
                 ResourceRoot resourceRoot = null;
                 DotName componentClassName = DotName.createSimple(component.getComponentClassName());

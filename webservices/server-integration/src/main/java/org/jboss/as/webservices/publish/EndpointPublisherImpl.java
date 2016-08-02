@@ -357,7 +357,7 @@ public final class EndpointPublisherImpl implements EndpointPublisher {
     }
 
     static class ForceJAXWSInvocationHandlerDeploymentAspect extends AbstractDeploymentAspect {
-        public ForceJAXWSInvocationHandlerDeploymentAspect() {
+        ForceJAXWSInvocationHandlerDeploymentAspect() {
         }
         @Override
         public void start(final Deployment dep) {

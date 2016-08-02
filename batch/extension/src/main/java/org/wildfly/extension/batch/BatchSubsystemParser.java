@@ -50,7 +50,7 @@ class BatchSubsystemParser implements XMLStreamConstants, XMLElementReader<List<
 
     private final ThreadsParser threadsParser;
 
-    public BatchSubsystemParser() {
+    BatchSubsystemParser() {
         threadsParser = ThreadsParser.getInstance();
     }
 

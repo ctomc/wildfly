@@ -103,7 +103,7 @@ public class EJB3IIOPResourceDefinition extends SimpleResourceDefinition {
 
     private abstract static class AbstractIIOPSettingWriteHandler extends AbstractWriteAttributeHandler<Void> {
 
-        public AbstractIIOPSettingWriteHandler(final AttributeDefinition attribute) {
+        AbstractIIOPSettingWriteHandler(final AttributeDefinition attribute) {
             super(attribute);
         }
 

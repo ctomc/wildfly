@@ -559,7 +559,7 @@ public class LocalEjbReceiver extends EJBReceiver implements Service<LocalEjbRec
 
         private final Object clonedResult;
 
-        public ImmediateResultProducer(final Object clonedResult) {
+        ImmediateResultProducer(final Object clonedResult) {
             this.clonedResult = clonedResult;
         }
 

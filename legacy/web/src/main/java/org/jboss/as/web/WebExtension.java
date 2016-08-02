@@ -239,7 +239,7 @@ public class WebExtension extends AbstractLegacyExtension {
     }
 
     private static class StandardWebExtensionAliasEntry extends AliasEntry {
-        public StandardWebExtensionAliasEntry(ManagementResourceRegistration target) {
+        StandardWebExtensionAliasEntry(ManagementResourceRegistration target) {
             super(target);
         }
 

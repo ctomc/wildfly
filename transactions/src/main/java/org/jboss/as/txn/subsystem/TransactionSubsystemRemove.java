@@ -34,7 +34,7 @@ class TransactionSubsystemRemove extends ReloadRequiredRemoveStepHandler {
 
     static final TransactionSubsystemRemove INSTANCE = new TransactionSubsystemRemove();
 
-    public TransactionSubsystemRemove() {
+    private TransactionSubsystemRemove() {
         super(TransactionSubsystemRootResourceDefinition.TRANSACTION_CAPABILITY);
     }
 

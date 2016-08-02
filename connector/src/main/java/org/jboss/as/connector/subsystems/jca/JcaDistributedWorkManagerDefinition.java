@@ -103,7 +103,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
                 }).end();
     }
 
-    public static enum DWmParameters {
+    public enum DWmParameters {
         NAME(SimpleAttributeDefinitionBuilder.create("name", ModelType.STRING)
                 .setAllowExpression(false)
                 .setAllowNull(false)
@@ -163,7 +163,7 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
             };
         }
 
-        private DWmParameters(AttributeDefinition attribute) {
+        DWmParameters(AttributeDefinition attribute) {
             this.attribute = attribute;
         }
 
@@ -174,13 +174,13 @@ public class JcaDistributedWorkManagerDefinition extends SimpleResourceDefinitio
         private AttributeDefinition attribute;
     }
 
-    public static enum PolicyValue {
+    public enum PolicyValue {
         NEVER,
         ALWAYS,
         WATERMARK;
     }
 
-    public static enum SelectorValue {
+    public enum SelectorValue {
         FIRST_AVAILABLE,
         PING_TIME,
         MAX_FREE_THREADS;

@@ -12,9 +12,9 @@ import io.undertow.servlet.api.DeploymentInfo;
 /**
  * @author Stuart Douglas
  */
-class SimpleUndertowExtension implements ServletExtension {
+public class SimpleUndertowExtension implements ServletExtension {
 
-    private static final String THIS_IS_NOT_A_SERVLET = "This is not a servlet";
+    static final String THIS_IS_NOT_A_SERVLET = "This is not a servlet";
 
     @Override
     public void handleDeployment(final DeploymentInfo deploymentInfo, final ServletContext servletContext) {

@@ -1437,7 +1437,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private static class ComponentClassIntrospector implements ClassIntrospecter {
         private final ComponentRegistry componentRegistry;
 
-        public ComponentClassIntrospector(final ComponentRegistry componentRegistry) {
+        ComponentClassIntrospector(final ComponentRegistry componentRegistry) {
             this.componentRegistry = componentRegistry;
         }
 
@@ -1451,7 +1451,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
     private static class ManagedReferenceInstanceFactory<T> implements InstanceFactory<T> {
         private final ManagedReferenceFactory component;
 
-        public ManagedReferenceInstanceFactory(final ManagedReferenceFactory component) {
+        ManagedReferenceInstanceFactory(final ManagedReferenceFactory component) {
             this.component = component;
         }
 
@@ -1652,7 +1652,7 @@ public class UndertowDeploymentInfoService implements Service<DeploymentInfo> {
         private final Handle handle;
         private final SetupAction action;
 
-        public UndertowThreadSetupAction(SetupAction action) {
+        UndertowThreadSetupAction(SetupAction action) {
             this.action = action;
             handle = new Handle() {
                 @Override

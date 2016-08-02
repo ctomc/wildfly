@@ -74,7 +74,7 @@ public class SingletonPolicyResourceDefinition extends ChildResourceDefinition {
         ;
         private final SimpleAttributeDefinition definition;
 
-        private Attribute(String name, ModelType type, ModelNode defaultValue) {
+        Attribute(String name, ModelType type, ModelNode defaultValue) {
             this.definition = new SimpleAttributeDefinitionBuilder(name, type)
                     .setAllowExpression(true)
                     .setAllowNull(defaultValue != null)

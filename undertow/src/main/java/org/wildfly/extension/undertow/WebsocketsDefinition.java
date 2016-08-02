@@ -151,7 +151,7 @@ class WebsocketsDefinition extends PersistentResourceDefinition {
         private final boolean dispatchToWorker;
 
 
-        public WebSocketInfo(String worker, String bufferPool, boolean dispatchToWorker) {
+        WebSocketInfo(String worker, String bufferPool, boolean dispatchToWorker) {
             this.worker = worker;
             this.bufferPool = bufferPool;
             this.dispatchToWorker = dispatchToWorker;

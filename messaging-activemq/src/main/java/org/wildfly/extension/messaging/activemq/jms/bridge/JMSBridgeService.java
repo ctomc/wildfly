@@ -51,7 +51,7 @@ class JMSBridgeService implements Service<JMSBridge> {
     private final String moduleName;
     private final InjectedValue<ExecutorService> executorInjector = new InjectedValue<>();
 
-    public JMSBridgeService(final String moduleName, final String bridgeName, final JMSBridge bridge) {
+    JMSBridgeService(final String moduleName, final String bridgeName, final JMSBridge bridge) {
         if(bridge == null) {
             throw MessagingLogger.ROOT_LOGGER.nullVar("bridge");
         }

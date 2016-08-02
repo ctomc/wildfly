@@ -80,7 +80,7 @@ class LegacySupport {
     /**
      * @author Jason T. Greene
      */
-    public static class JASPIAuthenticationModulesAttributeDefinition extends ListAttributeDefinition {
+    static class JASPIAuthenticationModulesAttributeDefinition extends ListAttributeDefinition {
 
         private static final ParameterValidator validator;
 
@@ -97,7 +97,7 @@ class LegacySupport {
         }
 
 
-        public JASPIAuthenticationModulesAttributeDefinition() {
+        JASPIAuthenticationModulesAttributeDefinition() {
             super(LegacySupportListAttributeBuilder.of(Constants.AUTH_MODULES, Constants.AUTH_MODULE, validator));
         }
 
@@ -169,7 +169,7 @@ class LegacySupport {
     /**
      * @author Jason T. Greene
      */
-    public static class LoginModulesAttributeDefinition extends ListAttributeDefinition {
+    static class LoginModulesAttributeDefinition extends ListAttributeDefinition {
         public static final ParameterValidator validator;
 
         static {
@@ -182,7 +182,7 @@ class LegacySupport {
         }
 
 
-        public LoginModulesAttributeDefinition(String name, String xmlName) {
+        LoginModulesAttributeDefinition(String name, String xmlName) {
             super(LegacySupportListAttributeBuilder.of(name, xmlName, validator).setDeprecated(ModelVersion.create(1, 2, 0)));
         }
 
@@ -249,7 +249,7 @@ class LegacySupport {
     /**
      * @author Jason T. Greene
      */
-    public static class MappingModulesAttributeDefinition extends ListAttributeDefinition {
+    static class MappingModulesAttributeDefinition extends ListAttributeDefinition {
         private static final ParameterValidator validator;
 
         static {
@@ -262,7 +262,7 @@ class LegacySupport {
         }
 
 
-        public MappingModulesAttributeDefinition() {
+        MappingModulesAttributeDefinition() {
             super(LegacySupportListAttributeBuilder.of(Constants.MAPPING_MODULES, Constants.MAPPING_MODULE, validator)
                             .setDeprecated(ModelVersion.create(1, 2, 0))
             );
@@ -322,7 +322,7 @@ class LegacySupport {
     /**
      * @author Jason T. Greene
      */
-    public static class ProviderModulesAttributeDefinition extends ListAttributeDefinition {
+    static class ProviderModulesAttributeDefinition extends ListAttributeDefinition {
         public static final ParameterValidator validator;
 
         static {
@@ -333,7 +333,7 @@ class LegacySupport {
         }
 
 
-        public ProviderModulesAttributeDefinition(String name, String xmlName) {
+        ProviderModulesAttributeDefinition(String name, String xmlName) {
             super(LegacySupportListAttributeBuilder.of(name, xmlName, validator)
                             .setDeprecated(ModelVersion.create(1, 2, 0))
             );

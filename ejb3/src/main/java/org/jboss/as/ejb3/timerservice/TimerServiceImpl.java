@@ -1117,7 +1117,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
          */
         private final TimerImpl timer;
 
-        public TimerCreationTransactionSynchronization(TimerImpl timer) {
+        TimerCreationTransactionSynchronization(TimerImpl timer) {
             if (timer == null) {
                 throw EJB3_TIMER_LOGGER.timerIsNull();
             }
@@ -1195,7 +1195,7 @@ public class TimerServiceImpl implements TimerService, Service<TimerService> {
          */
         private volatile boolean queued = false;
 
-        public Task(final TimerTask<?> delegate, ControlPoint controlPoint) {
+        Task(final TimerTask<?> delegate, ControlPoint controlPoint) {
             this.delegate = delegate;
             this.controlPoint = controlPoint;
         }

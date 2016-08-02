@@ -249,7 +249,7 @@ public class TransformersTestCase extends AbstractSubsystemBaseTest {
 
     private static class CorrectFalseToTrue extends FailedOperationTransformationConfig.AttributesPathAddressConfig<CorrectFalseToTrue>{
 
-        public CorrectFalseToTrue(AttributeDefinition...defs) {
+        CorrectFalseToTrue(AttributeDefinition...defs) {
             super(convert(defs));
         }
 

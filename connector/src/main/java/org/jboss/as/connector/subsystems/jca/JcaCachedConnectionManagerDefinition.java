@@ -84,7 +84,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
 
         }
 
-    public static enum CcmParameters {
+    public enum CcmParameters {
         DEBUG(SimpleAttributeDefinitionBuilder.create("debug", ModelType.BOOLEAN)
                 .setAllowExpression(true)
                 .setAllowNull(true)
@@ -118,7 +118,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build());
 
 
-        private CcmParameters(SimpleAttributeDefinition attribute) {
+        CcmParameters(SimpleAttributeDefinition attribute) {
             this.attribute = attribute;
         }
 
@@ -130,7 +130,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
     }
 
 
-    public static enum CcmOperations {
+    public enum CcmOperations {
         GET_NUMBER_OF_CONNECTIONS(new SimpleOperationDefinitionBuilder("get-number-of-connections", JcaExtension.getResourceDescriptionResolver(PATH_CACHED_CONNECTION_MANAGER.getKey()))
                 .setRuntimeOnly()
                 .build()),
@@ -139,7 +139,7 @@ public class JcaCachedConnectionManagerDefinition extends SimpleResourceDefiniti
                 .build());
 
 
-        private CcmOperations(SimpleOperationDefinition operation) {
+        CcmOperations(SimpleOperationDefinition operation) {
             this.operation = operation;
         }
 
