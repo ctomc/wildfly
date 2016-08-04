@@ -24,8 +24,6 @@ package org.jboss.as.test.integration.domain.mixed.eap630;
 
 import org.jboss.as.test.integration.domain.mixed.KernelBehaviorTestSuite;
 import org.jboss.as.test.integration.domain.mixed.Version;
-import org.jboss.as.test.integration.domain.mixed.eap620.MixedDomain620TestSuite;
-import org.jboss.as.test.integration.domain.mixed.eap620.WildcardReads620TestCase;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
