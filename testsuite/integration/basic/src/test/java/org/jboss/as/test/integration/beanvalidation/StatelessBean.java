@@ -40,19 +40,19 @@ public class StatelessBean {
     @Resource
     private ValidatorFactory validatorFactory;
 
-    public void buildDefaultValidatorFactory() {
+    void buildDefaultValidatorFactory() {
         Validation.buildDefaultValidatorFactory();
     }
 
-    public boolean isValidatorInjected() {
+    boolean isValidatorInjected() {
         return this.validator != null;
     }
 
-    public boolean isValidatorFactoryInjected() {
+    boolean isValidatorFactoryInjected() {
         return this.validatorFactory != null;
     }
 
-    public Validator getValidatorFromValidatorFactory() {
+    Validator getValidatorFromValidatorFactory() {
         return this.validatorFactory.getValidator();
     }
 }

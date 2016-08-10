@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Tests JBossPDP access from a web-application (servlet).
- * 
+ *
  * @author Josef Cacek
  */
 @RunWith(Arquillian.class)
@@ -50,7 +50,7 @@ public class JBossPDPServletInitializationTestCase {
 
     /**
      * Creates {@link WebArchive} for the deployment.
-     * 
+     *
      * @return
      */
     @Deployment(testable = false)
@@ -65,7 +65,7 @@ public class JBossPDPServletInitializationTestCase {
 
     /**
      * Validates that the servlet returns "OK" response.
-     * 
+     *
      * @throws Exception
      */
     @Test

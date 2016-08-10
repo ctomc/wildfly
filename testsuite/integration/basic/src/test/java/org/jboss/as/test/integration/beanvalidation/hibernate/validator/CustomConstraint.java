@@ -22,7 +22,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -45,15 +44,15 @@ public @interface CustomConstraint {
 
     Class<? extends Payload>[] payload() default {};
 
-    public class Validator implements ConstraintValidator<CustomConstraint, String> {
+    class Validator implements ConstraintValidator<CustomConstraint, String> {
 
         private final String message;
 
-        public Validator() {
+        Validator() {
             this.message = "Created by default factory";
         }
 
-        public Validator(String message) {
+        Validator(String message) {
             this.message = message;
         }
 
