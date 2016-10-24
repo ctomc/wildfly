@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright 2015, Red Hat, Inc., and individual contributors
+ * Copyright 2016, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -28,11 +28,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
-
+import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
 import javax.jms.JMSConsumer;
@@ -43,21 +43,22 @@ import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
 import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
-import org.jboss.arquillian.container.test.api.RunAsClient;
-import org.jboss.arquillian.junit.Arquillian;
-import org.jboss.as.arquillian.api.ContainerResource;
-import org.jboss.as.arquillian.container.ManagementClient;
 import org.jboss.as.controller.PathAddress;
 import org.jboss.as.controller.descriptions.ModelDescriptionConstants;
 import org.jboss.as.controller.operations.common.Util;
 import org.jboss.as.test.integration.common.jms.JMSOperations;
 import org.jboss.as.test.integration.common.jms.JMSOperationsProvider;
+import org.jboss.as.test.shared.TestSuiteEnvironment;
 import org.jboss.dmr.ModelNode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.wildfly.core.testrunner.ManagementClient;
+import org.wildfly.core.testrunner.WildflyTestRunner;
 
 /**
  * Test that a legacy (HornetQ) clients can lookup JMS resources managed by the messaging-activemq subsystem
@@ -65,8 +66,7 @@ import org.junit.runner.RunWith;
  *
  * @author <a href="http://jmesnil.net/">Jeff Mesnil</a> (c) 2015 Red Hat inc.
  */
-@RunWith(Arquillian.class)
-@RunAsClient
+@RunWith(WildflyTestRunner.class)
 public class LegacyJMSTestCase {
 
     private static final String QUEUE_NAME = "LegacyJMSTestCase-Queue";
@@ -83,14 +83,13 @@ public class LegacyJMSTestCase {
     private static final String LEGACY_CF_LOOKUP = "legacy/jms/" + CF_NAME;
     private static final String LEGACY_CF_ENTRY = "java:jboss/exported/" + LEGACY_CF_LOOKUP;
 
-    @ContainerResource
-    private Context remoteContext;
-
-    @ContainerResource
+    @Inject
     private ManagementClient managementClient;
 
+    private Context remoteContext;
+
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws Exception {
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
         ModelNode queueAttributes = new ModelNode();
@@ -107,10 +106,21 @@ public class LegacyJMSTestCase {
         addLegacyConnectionFactoryOp.get("connectors").add("http-connector");
         addLegacyConnectionFactoryOp.get("entries").add(LEGACY_CF_ENTRY);
         managementClient.getControllerClient().execute(addLegacyConnectionFactoryOp);
+        remoteContext = createJNDIContext();
+
+    }
+
+    protected static InitialContext createJNDIContext() throws NamingException {
+        final Properties env = new Properties();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, "org.jboss.naming.remote.client.InitialContextFactory");
+        env.put(Context.PROVIDER_URL, "http-remoting://" + TestSuiteEnvironment.getServerAddress() + ":8080");
+    /*    env.put(Context.SECURITY_PRINCIPAL, "guest");
+        env.put(Context.SECURITY_CREDENTIALS, "guest");*/
+        return new InitialContext(env);
     }
 
     @After
-    public void tearDown() throws IOException {
+    public void tearDown() throws Exception{
         JMSOperations jmsOperations = JMSOperationsProvider.getInstance(managementClient.getControllerClient());
 
         jmsOperations.removeJmsQueue(QUEUE_NAME);
@@ -120,6 +130,9 @@ public class LegacyJMSTestCase {
                 .add("legacy-connection-factory", CF_NAME);
         ModelNode addLegacyConnectionFactoryOp = Util.createOperation(REMOVE, PathAddress.pathAddress(legacyConnectionFactoryAddress));
         managementClient.getControllerClient().execute(addLegacyConnectionFactoryOp);
+        if (remoteContext != null) {
+            remoteContext.close();
+        }
     }
 
     @Test

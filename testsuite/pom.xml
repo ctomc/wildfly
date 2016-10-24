@@ -407,6 +407,7 @@
                 <module>integration</module>
                 <module>compat</module>
                 <module>domain</module>
+                <module>legacy</module>
             </modules>
         </profile>
 
