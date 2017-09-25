@@ -15,7 +15,7 @@
     <groupId>org.wildfly</groupId>
     <artifactId>jipijapa-spi</artifactId>
 
-    <name>jipijapa SPI</name>
+    <name>WildFly: jipijapa SPI</name>
 
     <dependencies>
         <!-- External -->

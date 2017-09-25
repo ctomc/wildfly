@@ -35,9 +35,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -47,11 +45,6 @@ import org.hibernate.jpa.boot.internal.ClassDescriptorImpl;
 import org.hibernate.jpa.boot.scan.internal.StandardScanOptions;
 import org.hibernate.jpa.boot.scan.spi.AbstractScannerImpl;
 import org.hibernate.jpa.boot.spi.MappingFileDescriptor;
-import org.hibernate.jpa.test.pack.Cat;
-import org.hibernate.jpa.test.pack.Distributor;
-import org.hibernate.jpa.test.pack.Item;
-import org.hibernate.jpa.test.pack.Kitten;
-import org.hibernate.jpa.test.pack.cfgxmlpar.Morito;
 import org.hibernate.jpa.test.pack.defaultpar.ApplicationServer;
 import org.hibernate.jpa.test.pack.defaultpar.IncrementListener;
 import org.hibernate.jpa.test.pack.defaultpar.Lighter;
@@ -59,13 +52,8 @@ import org.hibernate.jpa.test.pack.defaultpar.Money;
 import org.hibernate.jpa.test.pack.defaultpar.Mouse;
 import org.hibernate.jpa.test.pack.defaultpar.OtherIncrementListener;
 import org.hibernate.jpa.test.pack.defaultpar.Version;
-import org.hibernate.jpa.test.pack.excludehbmpar.Caipirinha;
 import org.hibernate.jpa.test.pack.explodedpar.Carpet;
 import org.hibernate.jpa.test.pack.explodedpar.Elephant;
-import org.hibernate.jpa.test.pack.externaljar.Scooter;
-import org.hibernate.jpa.test.pack.spacepar.Bug;
-import org.hibernate.jpa.test.pack.various.Airplane;
-import org.hibernate.jpa.test.pack.various.Seat;
 import org.jboss.as.jpa.hibernate4.VirtualFileSystemArchiveDescriptorFactory;
 import org.jboss.shrinkwrap.api.ArchivePath;
 import org.jboss.shrinkwrap.api.ArchivePaths;
@@ -77,25 +65,19 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.jboss.vfs.TempFileProvider;
 import org.jboss.vfs.VFS;
 import org.jboss.vfs.VirtualFile;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @author Steve Ebersole
  */
 public class ScannerTest {
-    protected static ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
-    protected static ClassLoader bundleClassLoader;
 
-    protected static TempFileProvider tempFileProvider;
-
-    protected static File testSrcDirectory;
+    private static TempFileProvider tempFileProvider;
 
     /**
      * Directory where shrink-wrap built archives are written
      */
-    protected static File shrinkwrapArchiveDirectory;
+    private static File shrinkwrapArchiveDirectory;
 
     static {
         try {
@@ -106,9 +88,7 @@ public class ScannerTest {
 
         // we make an assumption here that the directory which holds compiled classes (nested) also holds
         // sources.   We therefore look for our module directory name, and use that to locate bundles
-        final URL scannerTestsClassFileUrl = originalClassLoader.getResource(
-                ScannerTest.class.getName().replace('.', '/') + ".class"
-        );
+        final URL scannerTestsClassFileUrl = ScannerTest.class.getResource(".");
         if (scannerTestsClassFileUrl == null) {
             // blow up
             fail("Could not find ScannerTests class file url");
@@ -124,29 +104,10 @@ public class ScannerTest {
         final String moduleDirectoryPath = scannerTestsClassFileUrl.getFile().substring(0, position + "/hibernate4_3".length());
         final File moduleDirectory = new File(moduleDirectoryPath);
 
-        testSrcDirectory = new File(new File(moduleDirectory, "src"), "test");
-        final File bundlesDirectory = new File(testSrcDirectory, "bundles");
-        try {
-            bundleClassLoader = new URLClassLoader(new URL[]{bundlesDirectory.toURL()}, originalClassLoader);
-        } catch (MalformedURLException e) {
-            fail("Unable to build custom class loader");
-        }
-
         shrinkwrapArchiveDirectory = new File(moduleDirectory, "target/packages");
         shrinkwrapArchiveDirectory.mkdirs();
     }
 
-    @Before
-    public void prepareTCCL() {
-        // add the bundle class loader in order for ShrinkWrap to build the test package
-        Thread.currentThread().setContextClassLoader(bundleClassLoader);
-    }
-
-    @After
-    public void resetTCCL() throws Exception {
-        // reset the classloader
-        Thread.currentThread().setContextClassLoader(originalClassLoader);
-    }
 
     protected void addPackageToClasspath(File... files) throws MalformedURLException {
         List<URL> urlList = new ArrayList<URL>();
@@ -154,19 +115,11 @@ public class ScannerTest {
             urlList.add(file.toURL());
         }
         URLClassLoader classLoader = new URLClassLoader(
-                urlList.toArray(new URL[urlList.size()]), originalClassLoader
+                urlList.toArray(new URL[urlList.size()]), Thread.currentThread().getContextClassLoader()
         );
         Thread.currentThread().setContextClassLoader(classLoader);
     }
 
-    protected void addPackageToClasspath(URL... urls) throws MalformedURLException {
-        List<URL> urlList = new ArrayList<URL>();
-        urlList.addAll(Arrays.asList(urls));
-        URLClassLoader classLoader = new URLClassLoader(
-                urlList.toArray(new URL[urlList.size()]), originalClassLoader
-        );
-        Thread.currentThread().setContextClassLoader(classLoader);
-    }
 
     protected File buildDefaultPar() {
         final String fileName = "defaultpar.par";
@@ -201,28 +154,6 @@ public class ScannerTest {
         return physicalParFile;
     }
 
-    protected File buildExplicitPar() {
-        String fileName = "explicitpar.par";
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, fileName);
-        archive.addClasses(
-                Airplane.class,
-                Seat.class,
-                Cat.class,
-                Kitten.class,
-                Distributor.class,
-                Item.class
-        );
-
-        ArchivePath path = ArchivePaths.create("META-INF/orm.xml");
-        archive.addAsResource("explicitpar/META-INF/orm.xml", path);
-
-        path = ArchivePaths.create("META-INF/persistence.xml");
-        archive.addAsResource("explicitpar/META-INF/persistence.xml", path);
-
-        File testPackage = new File(shrinkwrapArchiveDirectory, fileName);
-        archive.as(ZipExporter.class).exportTo(testPackage, true);
-        return testPackage;
-    }
 
     protected File buildExplodedPar() {
         String fileName = "explodedpar";
@@ -246,100 +177,13 @@ public class ScannerTest {
         return testPackage;
     }
 
-    protected File buildExcludeHbmPar() {
-        String fileName = "excludehbmpar.par";
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, fileName);
-        archive.addClasses(
-                Caipirinha.class
-        );
-
-        ArchivePath path = ArchivePaths.create("META-INF/orm2.xml");
-        archive.addAsResource("excludehbmpar/META-INF/orm2.xml", path);
-
-        path = ArchivePaths.create("META-INF/persistence.xml");
-        archive.addAsResource("excludehbmpar/META-INF/persistence.xml", path);
-
-        path = ArchivePaths.create("org/hibernate/jpa/test/pack/excludehbmpar/Mouse.hbm.xml");
-        archive.addAsResource("excludehbmpar/org/hibernate/jpa/test/pack/excludehbmpar/Mouse.hbm.xml", path);
-
-        File testPackage = new File(shrinkwrapArchiveDirectory, fileName);
-        archive.as(ZipExporter.class).exportTo(testPackage, true);
-        return testPackage;
-    }
-
-    protected File buildCfgXmlPar() {
-        String fileName = "cfgxmlpar.par";
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, fileName);
-        archive.addClasses(
-                Morito.class,
-                Item.class
-        );
-
-        ArchivePath path = ArchivePaths.create("META-INF/persistence.xml");
-        archive.addAsResource("cfgxmlpar/META-INF/persistence.xml", path);
-
-        path = ArchivePaths.create("org/hibernate/jpa/test/pack/cfgxmlpar/hibernate.cfg.xml");
-        archive.addAsResource("cfgxmlpar/org/hibernate/jpa/test/pack/cfgxmlpar/hibernate.cfg.xml", path);
-
-        File testPackage = new File(shrinkwrapArchiveDirectory, fileName);
-        archive.as(ZipExporter.class).exportTo(testPackage, true);
-        return testPackage;
-    }
-
-    protected File buildSpacePar() {
-        String fileName = "space par.par";
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, fileName);
-        archive.addClasses(
-                Bug.class
-        );
-
-        ArchivePath path = ArchivePaths.create("META-INF/persistence.xml");
-        archive.addAsResource("space par/META-INF/persistence.xml", path);
-
-        File testPackage = new File(shrinkwrapArchiveDirectory, fileName);
-        archive.as(ZipExporter.class).exportTo(testPackage, true);
-        return testPackage;
-    }
-
-    protected File buildOverridenPar() {
-        String fileName = "overridenpar.jar";
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, fileName);
-        archive.addClasses(
-                org.hibernate.jpa.test.pack.overridenpar.Bug.class
-        );
-
-        ArchivePath path = ArchivePaths.create("META-INF/persistence.xml");
-        archive.addAsResource("overridenpar/META-INF/persistence.xml", path);
-
-        path = ArchivePaths.create("overridenpar.properties");
-        archive.addAsResource("overridenpar/overridenpar.properties", path);
-
-        File testPackage = new File(shrinkwrapArchiveDirectory, fileName);
-        archive.as(ZipExporter.class).exportTo(testPackage, true);
-        return testPackage;
-    }
-
-    protected File buildExternalJar() {
-        String fileName = "externaljar.jar";
-        JavaArchive archive = ShrinkWrap.create(JavaArchive.class, fileName);
-        archive.addClasses(
-                Scooter.class
-        );
-
-        ArchivePath path = ArchivePaths.create("META-INF/orm.xml");
-        archive.addAsResource("externaljar/META-INF/orm.xml", path);
-
-        File testPackage = new File(shrinkwrapArchiveDirectory, fileName);
-        archive.as(ZipExporter.class).exportTo(testPackage, true);
-        return testPackage;
-    }
 
     protected File buildLargeJar() {
         final String fileName = "large.jar";
         final JavaArchive archive = ShrinkWrap.create(JavaArchive.class, fileName);
 
         // Build a large jar by adding a lorem ipsum file repeatedly.
-        final File loremipsumTxtFile = new File(testSrcDirectory, "resources/org/hibernate/jpa/test/packaging/loremipsum.txt");
+        final File loremipsumTxtFile = new File("/org/hibernate/jpa/test/packaging/loremipsum.txt");
         for (int i = 0; i < 100; i++) {
             ArchivePath path = ArchivePaths.create("META-INF/file" + i);
             archive.addAsResource(loremipsumTxtFile, path);
@@ -396,35 +240,6 @@ public class ScannerTest {
         File testPackage = new File(shrinkwrapArchiveDirectory, fileName);
         archive.as(ExplodedExporter.class).exportExploded(shrinkwrapArchiveDirectory);
         return testPackage;
-    }
-
-    @Test
-    public void testHttp() throws Exception {
-        URL url = ArchiveHelper.getJarURLFromURLEntry(
-                new URL(
-                        "jar:http://www.ibiblio.org/maven/hibernate/jars/hibernate-annotations-3.0beta1.jar!/META-INF/persistence.xml"
-                ),
-                "/META-INF/persistence.xml"
-        );
-        try {
-            URLConnection urlConnection = url.openConnection();
-            urlConnection.connect();
-        } catch (IOException ie) {
-            //fail silently
-            return;
-        }
-        ArchiveDescriptor archiveDescriptor = VirtualFileSystemArchiveDescriptorFactory.INSTANCE.buildArchiveDescriptor(url);
-        AbstractScannerImpl.ResultCollector resultCollector = new AbstractScannerImpl.ResultCollector(new StandardScanOptions());
-        archiveDescriptor.visitArchive(
-                new AbstractScannerImpl.ArchiveContextImpl(
-                        new PersistenceUnitDescriptorAdapter(),
-                        true,
-                        resultCollector
-                )
-        );
-        assertEquals(0, resultCollector.getClassDescriptorSet().size());
-        assertEquals(0, resultCollector.getPackageDescriptorSet().size());
-        assertEquals(0, resultCollector.getMappingFileSet().size());
     }
 
     @Test

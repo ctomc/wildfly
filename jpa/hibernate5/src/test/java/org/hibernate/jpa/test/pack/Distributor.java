@@ -54,9 +54,7 @@ public class Distributor implements Serializable {
 
         final Distributor distributor = (Distributor) o;
 
-        if (!name.equals(distributor.name)) { return false; }
-
-        return true;
+        return name.equals(distributor.name);
     }
 
     public int hashCode() {

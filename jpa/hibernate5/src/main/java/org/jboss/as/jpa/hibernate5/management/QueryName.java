@@ -129,10 +129,7 @@ public class QueryName {
 
         if (displayQuery != null ? !displayQuery.equals(queryName.displayQuery) : queryName.displayQuery != null)
             return false;
-        if (hibernateQuery != null ? !hibernateQuery.equals(queryName.hibernateQuery) : queryName.hibernateQuery != null)
-            return false;
-
-        return true;
+        return hibernateQuery != null ? hibernateQuery.equals(queryName.hibernateQuery) : queryName.hibernateQuery == null;
     }
 
     @Override

@@ -13,7 +13,7 @@
 
     <groupId>org.wildfly</groupId>
     <artifactId>jipijapa-eclipselink</artifactId>
-    <name>jipijapa EclipseLink integration</name>
+    <name>WildFly: Jipijapa - EclipseLink integration</name>
 
     <dependencies>
         <!-- Internal -->
